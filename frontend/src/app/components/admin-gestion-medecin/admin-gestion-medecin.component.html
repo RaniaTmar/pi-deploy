@@ -1,0 +1,391 @@
+<!-- ===== ADMIN GESTION MÉDECIN ===== -->
+<div class="gp-page">
+
+  <!-- Header -->
+  <div class="gp-header">
+    <div>
+      <h2 class="gp-title"><i class="fa-solid fa-user-doctor me-2"></i>Gestion Doctors</h2>
+      <p class="gp-subtitle">Administration of doctor accounts and platform access</p>
+    </div>
+    <button class="btn-primary-purple" (click)="openCreate()">
+      <i class="fa-solid fa-plus me-2"></i>New Doctor
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="successMsg" class="alert-success-strip"><i class="fa-solid fa-circle-check me-2"></i>{{ successMsg }}</div>
+  <div *ngIf="errorMsg"   class="alert-error-strip"><i class="fa-solid fa-triangle-exclamation me-2"></i>{{ errorMsg }}</div>
+
+  <!-- Tabs -->
+  <div class="gp-tabs">
+    <button [class.tab-active]="activeTab==='list'"  (click)="setTab('list')">
+      <i class="fa-solid fa-list me-2"></i>Doctor List
+    </button>
+    <button [class.tab-active]="activeTab==='stats'" (click)="setTab('stats')">
+      <i class="fa-solid fa-chart-pie me-2"></i>Statistiques
+    </button>
+    <button [class.tab-active]="activeTab==='assign'" (click)="setTab('assign')">
+      <i class="fa-solid fa-link me-2"></i>Assignment
+    </button>
+  </div>
+
+  <!-- ===================== LIST ===================== -->
+  <div *ngIf="activeTab==='list'">
+
+    <div class="kpi-row">
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon"><i class="fa-solid fa-user-doctor"></i></div>
+        <div><div class="kpi-val">{{ totalDocs }}</div><div class="kpi-lbl">Total Doctors</div></div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <div><div class="kpi-val">{{ newThisMonth }}</div><div class="kpi-lbl">Newx ce mois</div></div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="kpi-val">{{ activeCount }}</div><div class="kpi-lbl">Comptes actifs</div></div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon"><i class="fa-solid fa-ban"></i></div>
+        <div><div class="kpi-val">{{ inactiveCount }}</div><div class="kpi-lbl">Comptes suspendus</div></div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="gp-filters">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Rechercher nom, prénom, email…"
+               [(ngModel)]="searchQuery" (ngModelChange)="onFilter()">
+      </div>
+      <select [(ngModel)]="filterActive" (ngModelChange)="onFilter()" class="filter-select">
+        <option value="">Tous statuts</option>
+        <option value="true">Active</option>
+        <option value="false">Suspendu</option>
+      </select>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><span>Loading…</span></div>
+
+    <div *ngIf="!isLoading" class="table-card">
+      <table class="gp-table">
+        <thead>
+          <tr>
+            <th>Doctor</th><th>Email</th><th>Phone</th>
+            <th>Patients</th><th>Status</th><th>Registered on</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of paginated" class="table-row">
+            <td>
+              <div class="patient-cell">
+                <div class="avatar-circle avatar-doc" [class.avatar-inactive]="!d.actif">
+                  {{ (d.prenom||'?')[0] }}{{ (d.nom||'?')[0] }}
+                </div>
+                <div>
+                  <div class="patient-name">Dr. {{ d.prenom }} {{ d.nom }}</div>
+                  <div class="patient-sub">{{ d.role }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-muted-sm">{{ d.email || '—' }}</td>
+            <td class="text-muted-sm">{{ d.telephone || '—' }}</td>
+            <td>
+              <span class="badge-count">{{ allPatients.length }}</span>
+            </td>
+            <td>
+              <span class="status-badge" [class.status-active]="d.actif" [class.status-inactive]="!d.actif">
+                <i class="fa-solid fa-circle me-1" style="font-size:8px"></i>
+                {{ d.actif ? 'Active' : 'Suspendu' }}
+              </span>
+            </td>
+            <td class="text-muted-sm">{{ fmt(d.createdAt) }}</td>
+            <td>
+              <div class="action-btns">
+                <button class="act-btn act-view"   title="View profil"         (click)="openDetail(d)"><i class="fa-solid fa-eye"></i></button>
+                <button class="act-btn act-edit"   title="Edit"            (click)="openEdit(d)"><i class="fa-solid fa-pen"></i></button>
+                <button class="act-btn" [class.act-suspend]="d.actif" [class.act-activate]="!d.actif"
+                        [title]="d.actif?'Suspendre':'Activate'" (click)="toggleActif(d)">
+                  <i class="fa-solid" [class.fa-lock]="d.actif" [class.fa-lock-open]="!d.actif"></i>
+                </button>
+                <button class="act-btn act-key"    title="Reset mot de passe"  (click)="resetPassword(d)"><i class="fa-solid fa-key"></i></button>
+                <button class="act-btn act-delete" title="Delete"           (click)="openDelete(d)"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="paginated.length===0">
+            <td colspan="7" class="empty-row"><i class="fa-solid fa-inbox me-2"></i>Aucun médecin trouvé.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="totalPages>1" class="pagination">
+        <button class="pg-btn" (click)="changePage(currentPage-1)" [disabled]="currentPage===1"><i class="fa-solid fa-chevron-left"></i></button>
+        <button *ngFor="let pg of pageNums" class="pg-btn" [class.pg-active]="pg===currentPage" (click)="changePage(pg)">{{ pg }}</button>
+        <button class="pg-btn" (click)="changePage(currentPage+1)" [disabled]="currentPage===totalPages"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STATS ===================== -->
+  <div *ngIf="activeTab==='stats'">
+    <div class="kpi-row">
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon"><i class="fa-solid fa-user-doctor"></i></div>
+        <div><div class="kpi-val">{{ totalDocs }}</div><div class="kpi-lbl">Total Doctors</div></div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <div><div class="kpi-val">{{ newThisMonth }}</div><div class="kpi-lbl">Newx ce mois</div></div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+        <div><div class="kpi-val">{{ allPatients.length }}</div><div class="kpi-lbl">Patients visibles</div></div>
+      </div>
+      <div class="kpi-card kpi-violet">
+        <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div>
+          <div class="kpi-val">{{ totalDocs>0 ? (allPatients.length/totalDocs|number:'1.0-1') : 0 }}</div>
+          <div class="kpi-lbl">Patients / Doctor</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fa-solid fa-circle-half-stroke me-2"></i>Comptes Actives vs Suspendus</div>
+        <canvas id="chartDocActive" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><i class="fa-solid fa-chart-bar me-2"></i>Inscriptions par Mois (6 derniers)</div>
+        <canvas id="chartDocMonth" height="220"></canvas>
+      </div>
+      <div class="chart-card chart-wide">
+        <div class="chart-title"><i class="fa-solid fa-users me-2"></i>Patients par Doctor</div>
+        <div class="info-note">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          All doctors access all patients registered on the platform.
+        </div>
+        <canvas id="chartPatDoc" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ASSIGNATION ===================== -->
+  <div *ngIf="activeTab==='assign'">
+    <div class="kpi-row" style="margin-bottom: 24px;">
+      <div class="kpi-card" style="flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <h4 style="margin: 0; color: var(--text-dark);"><i class="fa-solid fa-user-doctor me-2"></i>Sélecteur Doctor</h4>
+        <select class="gp-input" [(ngModel)]="selectedAssignMedecin" (ngModelChange)="onMedecinSelectChange()">
+          <option [ngValue]="null">-- Sélectionner un Doctor --</option>
+          <option *ngFor="let m of allDoctors" [ngValue]="m.id">Dr. {{ m.prenom }} {{ m.nom }} ({{m.email}})</option>
+        </select>
+      </div>
+      <div class="kpi-card" style="flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 16px; align-items: start;">
+        <h4 style="margin: 0; color: var(--text-dark);"><i class="fa-solid fa-user me-2"></i>Assigner Patient</h4>
+        <div style="display: flex; gap: 12px; width: 100%;">
+          <select class="gp-input" style="flex: 1" [(ngModel)]="selectedAssignPatient" [disabled]="!selectedAssignMedecin">
+             <option [ngValue]="null">-- Sélectionner Patient (non assigné) --</option>
+             <option *ngFor="let p of unassignedPatientsList" [ngValue]="p.id">{{ p.prenom }} {{ p.nom }}</option>
+          </select>
+          <button class="btn-primary-purple" (click)="assignPatient()" [disabled]="!selectedAssignMedecin || !selectedAssignPatient || isSubmitting">
+            <i class="fa-solid fa-link"></i> Assigner
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card" *ngIf="selectedAssignMedecin">
+      <h4 style="padding: 20px; margin: 0; border-bottom: 1px solid var(--border-light);"><i class="fa-solid fa-list-check me-2"></i>Patients Actuellement Assigneds</h4>
+      <div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><span>Loading…</span></div>
+      <table class="gp-table" *ngIf="!isLoading">
+        <thead>
+          <tr>
+            <th>Patient</th><th>Email</th><th>Phone</th><th>Gender</th><th>Reassign</th><th>Remove</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of assignedPatients">
+             <td>
+              <div class="patient-cell" *ngIf="p">
+                <div class="avatar-circle">
+                  {{ (p.prenom||'?')[0] }}{{ (p.nom||'?')[0] }}
+                </div>
+                <div>
+                  <div class="patient-name">{{ p.prenom || 'N/A' }} {{ p.nom || 'N/A' }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="text-muted-sm">{{ p?.user?.email || '—' }}</td>
+            <td class="text-muted-sm">{{ p?.user?.telephone || '—' }}</td>
+            <td class="text-muted-sm">{{ p?.sexe || '—' }}</td>
+            <td>
+              <button class="act-btn" style="background: #6c757d; color: white; border-radius: 6px; padding: 6px 12px; font-size: 0.8rem;" (click)="openReassignModal(p)">
+                <i class="fa-solid fa-arrows-rotate me-1"></i> Reassign
+              </button>
+            </td>
+            <td>
+              <button class="act-btn btn-danger" style="color: white; border-radius: 6px; padding: 6px 12px; font-size: 0.8rem;" (click)="unassignPatient(p?.id)">
+                <i class="fa-solid fa-trash me-1"></i> Remove
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="assignedPatients.length === 0">
+             <td colspan="6" class="empty-row text-center"><i class="fa-solid fa-user-xmark me-2"></i>No patient assigned à ce médecin.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="kpi-card text-center" style="padding: 40px; color: var(--text-muted);" *ngIf="!selectedAssignMedecin">
+        <i class="fa-solid fa-arrow-pointer" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
+        <p>Please select a doctor above to manage their patients.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ REASSIGN MODAL ============ -->
+<div class="modal-backdrop" *ngIf="showReassignModal" (click)="closeReassignModal()">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <span><i class="fa-solid fa-arrows-rotate me-2"></i>Reassign Patient</span>
+      <button class="modal-close" (click)="closeReassignModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="movingPatient">
+      <div class="text-center mb-4">
+        <div class="detail-avatar mx-auto">{{ (movingPatient.prenom||'?')[0] }}{{ (movingPatient.nom||'?')[0] }}</div>
+        <h5 class="mt-2">{{ movingPatient.prenom }} {{ movingPatient.nom }}</h5>
+        <p class="text-muted small">Reassign this patient à un autre médecin</p>
+      </div>
+
+      <div class="form-group">
+        <label>New Doctor</label>
+        <select class="gp-input" [(ngModel)]="newDoctorId">
+          <option [ngValue]="null">-- Choisir un Doctor --</option>
+          <ng-container *ngFor="let m of allDoctors">
+            <option *ngIf="m.id !== selectedAssignMedecin" [ngValue]="m.id">
+              Dr. {{ m.prenom }} {{ m.nom }}
+            </option>
+          </ng-container>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeReassignModal()" [disabled]="isSubmitting">Cancel</button>
+      <button class="btn-primary-purple" (click)="confirmReassign()" [disabled]="!newDoctorId || isSubmitting">
+        <span *ngIf="isSubmitting"><i class="fa-solid fa-spinner fa-spin me-2"></i></span>
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DETAIL MODAL ============ -->
+<div class="modal-backdrop" *ngIf="showDetail" (click)="closeDetail()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <span><i class="fa-solid fa-user-doctor me-2"></i>Profil Doctor</span>
+      <button class="modal-close" (click)="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="selectedDoc">
+      <div class="text-center mb-4">
+        <div class="detail-avatar avatar-doc mx-auto">{{ (selectedDoc.prenom||'?')[0] }}{{ (selectedDoc.nom||'?')[0] }}</div>
+        <h4 class="fw-bold mt-2">Dr. {{ selectedDoc.prenom }} {{ selectedDoc.nom }}</h4>
+        <span class="status-badge mx-auto" style="display:inline-flex;margin-top:6px"
+              [class.status-active]="selectedDoc.actif" [class.status-inactive]="!selectedDoc.actif">
+          {{ selectedDoc.actif ? 'Compte Active' : 'Compte Suspendu' }}
+        </span>
+      </div>
+      <div class="detail-info-grid">
+        <div><strong>Email:</strong> {{ selectedDoc.email || '—' }}</div>
+        <div><strong>Phone:</strong> {{ selectedDoc.telephone || '—' }}</div>
+        <div><strong>Rôle:</strong> {{ selectedDoc.role }}</div>
+        <div><strong>Registered on:</strong> {{ fmt(selectedDoc.createdAt) }}</div>
+        <div><strong>Patients accessibles:</strong> {{ allPatients.length }}</div>
+        <div><strong>ID Compte:</strong> #{{ selectedDoc.id }}</div>
+      </div>
+      <div class="info-note mt-4">
+        <i class="fa-solid fa-stethoscope me-2"></i>
+        This doctor has access to all patient files and can add medical observations.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeDetail()">Close</button>
+      <button class="btn-primary-purple" (click)="closeDetail(); openEdit(selectedDoc)">
+        <i class="fa-solid fa-pen me-2"></i>Edit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CREATE / EDIT MODAL ============ -->
+<div class="modal-backdrop" *ngIf="showForm" (click)="closeForm()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <span><i class="fa-solid fa-pen me-2"></i>{{ isEditMode ? 'Edit' : 'New' }} Doctor</span>
+      <button class="modal-close" (click)="closeForm()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <h6 class="section-label">Informations personnelles</h6>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="dForm.nom" placeholder="Last Name" class="gp-input">
+        </div>
+        <div class="form-group">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="dForm.prenom" placeholder="First Name" class="gp-input">
+        </div>
+        <div class="form-group">
+          <label>Email <span class="req">*</span></label>
+          <input type="email" [(ngModel)]="dForm.email" placeholder="dr.@alzcare.tn" class="gp-input">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" [(ngModel)]="dForm.telephone" placeholder="+216 XX XXX XXX" class="gp-input">
+        </div>
+        <div class="form-group" *ngIf="!isEditMode">
+          <label>Mot de passe initial</label>
+          <input type="password" [(ngModel)]="dForm.password" placeholder="AlzCare2026!" class="gp-input">
+        </div>
+        <div class="form-group" *ngIf="isEditMode">
+          <label>Accès plateforme</label>
+          <select [(ngModel)]="dForm.actif" class="gp-input">
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Suspendu</option>
+          </select>
+        </div>
+      </div>
+      <div *ngIf="!isEditMode" class="info-note mt-3">
+        <i class="fa-solid fa-info-circle me-2"></i>
+        The doctor will receive their credentials by email and will be able to access all patient files.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeForm()" [disabled]="isSubmitting">Cancel</button>
+      <button class="btn-primary-purple" (click)="save()" [disabled]="isSubmitting">
+        <span *ngIf="isSubmitting"><i class="fa-solid fa-spinner fa-spin me-2"></i></span>
+        {{ isEditMode ? 'Update' : 'Create Doctor' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DELETE CONFIRM ============ -->
+<div class="modal-backdrop" *ngIf="showDelConf" (click)="showDelConf=false">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-head danger-head">
+      <span><i class="fa-solid fa-triangle-exclamation me-2"></i>Confirm deletion</span>
+      <button class="modal-close" (click)="showDelConf=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body text-center py-4" *ngIf="deletingDoc">
+      <div class="delete-icon"><i class="fa-solid fa-trash-can"></i></div>
+      <p class="mt-3">Delete account of <strong>Dr. {{ deletingDoc.prenom }} {{ deletingDoc.nom }}</strong> ?</p>
+      <p class="text-muted small">This action is irreversible.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="showDelConf=false">Cancel</button>
+      <button class="btn-danger" (click)="doDelete()"><i class="fa-solid fa-trash me-2"></i>Delete</button>
+    </div>
+  </div>
+</div>

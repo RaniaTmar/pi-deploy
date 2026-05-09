@@ -1,0 +1,282 @@
+<div class="mini-chat-widget">
+
+  <!-- FAB -->
+  <div class="chat-fab-wrap">
+    <button class="chat-fab" (click)="toggleMiniChat()" [class.active]="isMiniChatOpen()">
+      <i class="fa-solid fs-20" [class.fa-comment-dots]="!isMiniChatOpen()" [class.fa-xmark]="isMiniChatOpen()"></i>
+    </button>
+    <span *ngIf="unreadCount() > 0 && !isMiniChatOpen()" class="chat-fab-badge">
+      {{ unreadCount() > 99 ? '99+' : unreadCount() }}
+    </span>
+  </div>
+
+  <!-- Panel -->
+  <div class="mini-chat-panel" *ngIf="isMiniChatOpen()">
+
+    <!-- ── CONTACT / GROUP LIST ── -->
+    <ng-container *ngIf="!activeMiniChatUserId() && !activeMiniChatGroupId()">
+
+      <!-- Header -->
+      <div class="mc-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="mc-logo"><i class="fa-solid fa-bolt"></i></div>
+          <span class="fw-black fs-15 text-dark">Messages</span>
+        </div>
+        <button class="mc-icon-btn" (click)="openInMessenger()" title="Open full messenger">
+          <i class="fa-solid fa-expand fs-13"></i>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="mc-search-bar">
+        <i class="fa-solid fa-magnifying-glass text-muted fs-13"></i>
+        <input type="text" class="mc-search-input"
+               [ngModel]="miniChatSearch()" (ngModelChange)="miniChatSearch.set($event)"
+               [placeholder]="activeMiniChatType() === 'users' ? 'Search contacts...' : 'Search groups...'">
+      </div>
+
+      <!-- Tabs -->
+      <div class="mc-tabs">
+        <button class="mc-tab" [class.active]="activeMiniChatType() === 'users'" (click)="activeMiniChatType.set('users')">
+          <i class="fa-solid fa-user-group me-1 fs-11"></i> Contacts
+        </button>
+        <button class="mc-tab" [class.active]="activeMiniChatType() === 'groups'" (click)="activeMiniChatType.set('groups')">
+          <i class="fa-solid fa-layer-group me-1 fs-11"></i> Groups
+        </button>
+      </div>
+
+      <!-- List -->
+      <div class="mc-list comm-scroll-sm">
+
+        <!-- Users -->
+        <ng-container *ngIf="activeMiniChatType() === 'users'">
+          <div *ngFor="let user of filteredChatUsers()"
+               class="mc-list-item"
+               (click)="openMiniChatConversation(user.id!)">
+            <div class="mc-avatar-wrap">
+              <img *ngIf="getUserImage(user.id!)" [src]="getUserImage(user.id!)" class="mc-avatar" alt="">
+              <div *ngIf="!getUserImage(user.id!)" class="mc-avatar mc-avatar-initials">
+                {{ (user.prenom || 'U').substring(0,1) }}
+              </div>
+              <span class="mc-online-dot"></span>
+            </div>
+            <div class="mc-list-info">
+              <span class="mc-list-name">{{ user.prenom }} {{ user.nom }}</span>
+              <span class="mc-list-sub">Tap to message</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-muted fs-11"></i>
+          </div>
+          <div *ngIf="filteredChatUsers().length === 0" class="mc-empty">
+            <i class="fa-regular fa-face-meh d-block mb-2 fs-24 opacity-25"></i>
+            No contacts found
+          </div>
+        </ng-container>
+
+        <!-- Groups -->
+        <ng-container *ngIf="activeMiniChatType() === 'groups'">
+          <div *ngFor="let grp of filteredChatGroups()"
+               class="mc-list-item"
+               (click)="openMiniChatGroup(grp.id)">
+            <div class="mc-avatar mc-avatar-group">
+              {{ (grp.name || 'G').substring(0,1) }}
+            </div>
+            <div class="mc-list-info">
+              <span class="mc-list-name">{{ grp.name }}</span>
+              <span class="mc-list-sub text-truncate">{{ grp.description || 'Group chat' }}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-muted fs-11"></i>
+          </div>
+          <div *ngIf="filteredChatGroups().length === 0" class="mc-empty">
+            <i class="fa-regular fa-face-meh d-block mb-2 fs-24 opacity-25"></i>
+            No groups found
+          </div>
+        </ng-container>
+
+      </div>
+    </ng-container>
+
+    <!-- ── ACTIVE CONVERSATION ── -->
+    <ng-container *ngIf="activeMiniChatUserId() || activeMiniChatGroupId()">
+
+      <!-- Conversation Header -->
+      <div class="mc-conv-header">
+        <button class="mc-icon-btn me-1" (click)="closeMiniChatConversation()">
+          <i class="fa-solid fa-arrow-left fs-13"></i>
+        </button>
+        <div class="mc-avatar-wrap flex-shrink-0">
+          <img *ngIf="activeMiniChatUserId() && getUserImage(activeMiniChatUserId()!)"
+               [src]="getUserImage(activeMiniChatUserId()!)" class="mc-avatar" alt="">
+          <div *ngIf="!activeMiniChatUserId() || !getUserImage(activeMiniChatUserId()!)"
+               class="mc-avatar mc-avatar-group">
+            {{ miniChatTitle().substring(0,1) }}
+          </div>
+          <span class="mc-online-dot"></span>
+        </div>
+        <div class="mc-list-info flex-grow-1 overflow-hidden">
+          <span class="mc-list-name text-truncate d-block">{{ miniChatTitle() }}</span>
+          <span class="mc-list-sub text-success">Active now</span>
+        </div>
+        <button class="mc-icon-btn" title="Open in Messenger" (click)="openInMessenger()">
+          <i class="fa-solid fa-expand fs-13"></i>
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div class="mc-messages comm-scroll-sm">
+        <div *ngIf="miniChatMessages().length === 0" class="mc-empty mt-4">
+          <i class="fa-regular fa-comment-dots d-block mb-2 fs-28 opacity-25"></i>
+          No messages yet. Say hi!
+        </div>
+
+        <div *ngFor="let msg of miniChatMessages()" class="mc-msg-row"
+             [class.mc-msg-row--sent]="msg.senderId === currentUserId()">
+
+          <!-- Avatar (received only) -->
+          <div *ngIf="msg.senderId !== currentUserId()" class="mc-avatar-wrap flex-shrink-0 align-self-end">
+            <img *ngIf="getUserImage(msg.senderId)" [src]="getUserImage(msg.senderId)" class="mc-avatar mc-avatar--sm" alt="">
+            <div *ngIf="!getUserImage(msg.senderId)" class="mc-avatar mc-avatar--sm mc-avatar-initials">
+              {{ getUserName(msg.senderId).substring(0,1) }}
+            </div>
+          </div>
+
+          <div class="mc-bubble-col" [class.mc-bubble-col--sent]="msg.senderId === currentUserId()">
+
+            <!-- Sender name in group -->
+            <span *ngIf="activeMiniChatGroupId() && msg.senderId !== currentUserId()" class="mc-sender-name">
+              {{ getUserName(msg.senderId) }}
+            </span>
+
+            <!-- Reply preview -->
+            <div *ngIf="msg.parentMessageId" class="mc-reply-preview">
+              <i class="fa-solid fa-reply me-1"></i>
+              <span class="text-truncate">{{ msg.parentMessageContent || 'Replied to a message' }}</span>
+            </div>
+
+            <!-- Bubble -->
+            <div class="mc-bubble"
+                 [class.mc-bubble--sent]="msg.senderId === currentUserId()"
+                 [class.mc-bubble--received]="msg.senderId !== currentUserId()"
+                 [class.mc-bubble--bot]="msg.fromBot"
+                 [class.mc-bubble--pinned]="msg.pinned">
+
+              <!-- Media -->
+              <div *ngIf="msg.mediaUrl" class="mc-media mb-1">
+                <img [src]="'http://localhost:8080' + msg.mediaUrl" class="img-fluid rounded-3" style="max-height: 140px;">
+              </div>
+
+              <!-- Poll -->
+              <div *ngIf="msg.type === 'POLL'" class="mc-poll">
+                <p class="fw-bold fs-12 mb-2"><i class="fa-solid fa-square-poll-vertical me-1"></i>{{ msg.pollQuestion }}</p>
+                <div *ngFor="let opt of msg.pollOptions" class="mc-poll-opt" (click)="vote(msg.id, opt.id!)">
+                  <div class="d-flex justify-content-between fs-11 mb-1">
+                    <span>{{ opt.text }}</span><span>{{ opt.votes || 0 }}</span>
+                  </div>
+                  <div class="mc-poll-bar"><div class="mc-poll-fill" [style.width.%]="20"></div></div>
+                </div>
+              </div>
+
+              <!-- Text -->
+              <p *ngIf="msg.content && msg.type !== 'POLL'" class="mb-0 mc-text"
+                 [innerHTML]="formatMessage(msg.content)"></p>
+
+              <!-- Medication YES/NO -->
+              <div *ngIf="msg.type === 'MEDICATION_REMINDER' && !medicationReminderAnswered(msg.id)"
+                   class="mc-med-actions mt-2">
+                <button class="mc-med-btn yes" (click)="answerMedicationReminder(msg.id!, true)" [disabled]="medReminderAckLoading()">YES</button>
+                <button class="mc-med-btn no"  (click)="answerMedicationReminder(msg.id!, false)" [disabled]="medReminderAckLoading()">NO</button>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mc-bubble-footer" [class.mc-bubble-footer--sent]="msg.senderId === currentUserId()">
+              <i *ngIf="msg.pinned" class="fa-solid fa-thumbtack text-primary fs-9 me-1"></i>
+              <span class="mc-time">{{ msg.sentAt | date:'shortTime' }}</span>
+              <i *ngIf="msg.senderId === currentUserId()" class="fa-solid fa-check-double text-primary fs-9 ms-1"></i>
+            </div>
+          </div>
+
+          <!-- Hover actions -->
+          <div class="mc-hover-actions" [class.mc-hover-actions--sent]="msg.senderId === currentUserId()">
+            <button class="mc-action-btn" (click)="setReply(msg)" title="Reply"><i class="fa-solid fa-reply fs-10"></i></button>
+            <button class="mc-action-btn" (click)="togglePin(msg)" [class.active]="msg.pinned" title="Pin"><i class="fa-solid fa-thumbtack fs-10"></i></button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Mention dropdown -->
+      <div class="mc-mention-dropdown" *ngIf="showMentionDropdown() && mentionSuggestions().length > 0">
+        <div *ngFor="let m of mentionSuggestions()" class="mc-mention-item" (click)="insertMention(m)">
+          <img *ngIf="getUserImage(m.id)" [src]="getUserImage(m.id)" class="mc-avatar mc-avatar--sm" alt="">
+          <div *ngIf="!getUserImage(m.id)" class="mc-avatar mc-avatar--sm mc-avatar-initials">{{ (m.name||'U').substring(0,1) }}</div>
+          <span class="fs-13">{{ m.name }}</span>
+        </div>
+      </div>
+
+      <!-- Input area -->
+      <div class="mc-input-area">
+
+        <!-- Reply bar -->
+        <div *ngIf="replyingTo" class="mc-reply-bar animate-fade-in">
+          <i class="fa-solid fa-reply text-primary me-2 fs-11"></i>
+          <span class="text-truncate flex-grow-1 fs-12 text-muted">{{ lastMessageContent }}</span>
+          <button class="mc-icon-btn" (click)="cancelReply()"><i class="fa-solid fa-xmark fs-11"></i></button>
+        </div>
+
+        <!-- Poll creator -->
+        <div *ngIf="isPollMode()" class="mc-poll-creator animate-fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold fs-12 text-primary"><i class="fa-solid fa-chart-simple me-1"></i>New Poll</span>
+            <button class="mc-icon-btn" (click)="togglePollMode()"><i class="fa-solid fa-xmark fs-11"></i></button>
+          </div>
+          <input type="text" class="mc-poll-input mb-2" placeholder="Question..." [(ngModel)]="pollQuestion">
+          <div *ngFor="let opt of pollOptions(); let i = index; trackBy: trackByIndex" class="d-flex gap-1 mb-1">
+            <input type="text" class="mc-poll-input flex-grow-1" [placeholder]="'Option ' + (i+1)" [(ngModel)]="pollOptions()[i]">
+            <button *ngIf="pollOptions().length > 2" class="mc-icon-btn text-danger" (click)="removePollOption(i)"><i class="fa-solid fa-minus fs-11"></i></button>
+          </div>
+          <button class="mc-add-opt-btn" (click)="addPollOption()" *ngIf="pollOptions().length < 6">
+            <i class="fa-solid fa-plus me-1 fs-11"></i> Add option
+          </button>
+        </div>
+
+        <!-- File previews -->
+        <div *ngIf="selectedMessageFiles.length > 0" class="mc-file-previews animate-fade-in">
+          <div *ngFor="let file of selectedMessageFiles; let i = index" class="mc-file-chip">
+            <i class="fa-solid" [ngClass]="file.type.startsWith('image/') ? 'fa-image' : 'fa-file'"></i>
+            <span class="text-truncate" style="max-width: 80px;">{{ file.name }}</span>
+            <button class="mc-icon-btn text-danger" (click)="removeSelectedMessageFile(i)"><i class="fa-solid fa-xmark fs-10"></i></button>
+          </div>
+        </div>
+
+        <!-- Input row -->
+        <div class="mc-input-row">
+          <input #fileInput type="file" hidden (change)="onMessageFileSelected($event)" accept="image/*,video/*" multiple>
+          <button class="mc-tool-btn" (click)="fileInput.click()" title="Attach"><i class="fa-solid fa-paperclip"></i></button>
+          <button *ngIf="activeMiniChatGroupId()" class="mc-tool-btn" (click)="togglePollMode()" title="Poll"><i class="fa-solid fa-chart-simple"></i></button>
+          <button class="mc-tool-btn mc-emoji-toggle" (click)="toggleEmojiPicker()" title="Emoji"><i class="fa-regular fa-face-smile"></i></button>
+
+          <input type="text" class="mc-text-input"
+                 [ngModel]="miniChatInput"
+                 (ngModelChange)="onChatInput($event)"
+                 (keyup.enter)="sendMiniChatMessage()"
+                 [placeholder]="isPollMode() ? 'Add context...' : 'Aa'">
+
+          <button class="mc-send-btn"
+                  (click)="sendMiniChatMessage()"
+                  [disabled]="!miniChatInput.trim() && selectedMessageFiles.length === 0 && !isPollMode()">
+            <i class="fa-solid fa-paper-plane fs-13"></i>
+          </button>
+        </div>
+
+        <!-- Emoji picker -->
+        <div *ngIf="showEmojiPicker()" class="mc-emoji-picker mc-emoji-picker-container">
+          <div class="mc-emoji-grid">
+            <span *ngFor="let emoji of EMOJI_LIST" (click)="addEmoji(emoji)" class="mc-emoji-item">{{ emoji }}</span>
+          </div>
+        </div>
+
+      </div>
+    </ng-container>
+
+  </div>
+</div>

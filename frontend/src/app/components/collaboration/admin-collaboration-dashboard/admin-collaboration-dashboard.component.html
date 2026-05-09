@@ -1,0 +1,1262 @@
+<!-- Admin Dashboard Wrapper -->
+<div class="admin-dashboard-wrapper">
+
+<!-- Page Header WITH INNER DROPDOWN -->
+<div
+  class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-black border-opacity-10 position-relative"
+  style="z-index: 10;">
+  <div class="d-flex align-items-center gap-4">
+    <div class="section-header text-start mb-0">
+      <h2 class="fw-black mb-1 section-header__title text-capitalize fs-28 ls-n1">
+        Clinical Collaboration <span class="underline text-primary position-relative">Governance</span>
+      </h2>
+      <div class="sub-title fs-14 text-doc-secondary opacity-75">Oversee community health, safety logs, and clinical specialty groups.</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+
+    <!-- VIEW SWITCHER DROPDOWN -->
+    <div class="dropdown me-2" style="position: relative;">
+      <button
+        class="btn btn-white fw-bold rounded-pill shadow-sm d-flex justify-content-between align-items-center small px-4 py-2 border"
+        style="width: 230px;" (click)="dropdownOpen = !dropdownOpen">
+        <span class="text-truncate text-doc-heading text-uppercase letter-spacing-1 fs-12">
+          <i class="fa-solid fa-heart-pulse me-2 text-primary" *ngIf="currentView === 'health'"></i>
+          <i class="fa-solid fa-users-gear me-2 text-primary" *ngIf="currentView === 'groups'"></i>
+          <i class="fa-solid fa-shield-exclamation me-2 text-danger" *ngIf="currentView === 'moderation'"></i>
+          <i class="fa-solid fa-microchip me-2 text-primary" *ngIf="currentView === 'ai'"></i>
+          <i class="fa-solid fa-bullhorn me-2 text-primary" *ngIf="currentView === 'announcements'"></i>
+          <i class="fa-solid fa-shield-halved me-2 text-danger" *ngIf="currentView === 'content'"></i>
+          {{ viewLabel(currentView) }}
+        </span>
+        <i class="fa-solid fa-chevron-down ms-2 text-muted" style="font-size: 0.8rem;"></i>
+      </button>
+
+      <!-- Dropdown Menu -->
+      <ul class="dropdown-menu shadow-lg border-0 rounded-4 mt-2 p-2 w-100 show animate-fade-in" *ngIf="dropdownOpen"
+        style="position: absolute; top: 100%; right: 0; min-width: 240px;">
+
+        <li>
+          <button class="dropdown-item py-2 fw-black rounded-3 text-uppercase fs-11 letter-spacing-1" [class.active-soft]="currentView === 'health'"
+            (click)="switchView('health'); dropdownOpen = false">
+            <i class="fa-solid fa-chart-line me-3 opacity-50"></i> Health Monitoring
+          </button>
+        </li>
+        <li>
+          <button class="dropdown-item py-2 fw-black rounded-3 text-uppercase fs-11 letter-spacing-1" [class.active-soft]="currentView === 'groups'"
+            (click)="switchView('groups'); dropdownOpen = false">
+            <i class="fa-solid fa-user-group me-3 opacity-50"></i> Specialty Circles
+          </button>
+        </li>
+        <li>
+          <button class="dropdown-item py-2 fw-black rounded-3 text-uppercase fs-11 letter-spacing-1 d-flex justify-content-between align-items-center"
+            [class.active-soft]="currentView === 'moderation'" (click)="switchView('moderation'); dropdownOpen = false">
+            <div><i class="fa-solid fa-shield-virus me-3 opacity-50"></i> Risk Compliance</div>
+            <span class="badge bg-danger rounded-pill px-2 py-1"
+              *ngIf="kpis.pendingModeration > 0">{{kpis.pendingModeration}}</span>
+          </button>
+        </li>
+        <li>
+          <button class="dropdown-item py-2 fw-black rounded-3 text-uppercase fs-11 letter-spacing-1" [class.active-soft]="currentView === 'ai'"
+            (click)="switchView('ai'); dropdownOpen = false">
+            <i class="fa-solid fa-microchip me-3 opacity-50 text-primary"></i> AI Intelligence Pulse
+          </button>
+        </li>
+        <li>
+          <button class="dropdown-item py-2 fw-black rounded-3 text-uppercase fs-11 letter-spacing-1" [class.active-soft]="currentView === 'announcements'"
+            (click)="switchView('announcements'); dropdownOpen = false">
+            <i class="fa-solid fa-bullhorn me-3 opacity-50"></i> Global Broadcast
+          </button>
+        </li>
+        <li>
+          <button class="dropdown-item py-2 fw-black rounded-3 text-uppercase fs-11 letter-spacing-1" [class.active-soft]="currentView === 'content'"
+            (click)="switchView('content'); dropdownOpen = false">
+            <i class="fa-solid fa-shield-halved me-3 opacity-50 text-danger"></i> Content Management
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <button
+      class="btn btn-soft-primary fw-bold rounded-pill shadow-sm d-flex justify-content-center align-items-center py-2"
+      style="width: 160px; border: 1px solid rgba(128,0,128,0.1);" (click)="scanHistory()">
+      <i class="fa-solid fa-magnifying-glass me-2"></i> Scan Logs
+    </button>
+    <button class="btn btn-primary fw-bold rounded-pill shadow-sm d-flex justify-content-center align-items-center py-2"
+      style="width: 140px;" (click)="reload()">
+      <i class="fa-solid fa-arrows-rotate me-2"></i> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- Alert area -->
+<div *ngIf="error" class="alert alert-danger shadow-sm rounded-4 border-0 mb-4">{{ error }}</div>
+
+<!-- MODULAR VIEW SWITCHER (collaboration sub-views) -->
+<div [ngSwitch]="currentView" class="position-relative z-1" (click)="dropdownOpen = false">
+
+  <div *ngSwitchCase="'health'" class="animate-fade-in">
+    <section class="mb-5 mt-4">
+      <h6 class="mb-4 fw-black text-muted text-uppercase letter-spacing-1">Risk Assessment Vitals</h6>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div
+            class="card shadow-doc border-0 h-100 rounded-4 transition-hover bg-white border-start border-4 border-warning">
+            <div class="card-body p-4">
+              <div class="text-muted small fw-black text-uppercase mb-2 opacity-75">Critical Safety Alerts</div>
+              <div class="fs-1 fw-black text-doc-heading mb-1 d-flex align-items-end">
+                {{ kpis.unresolvedSafetyAlerts }}
+                <span
+                  class="fs-12 text-warning ms-3 mb-2 px-3 py-1 bg-soft-warning rounded-pill fw-black text-uppercase">High Priority</span>
+              </div>
+              <p class="small mb-0 text-doc-secondary opacity-75">Unresolved signals requiring clinical review.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div
+            class="card shadow-doc border-0 h-100 rounded-4 transition-hover bg-white border-start border-4 border-danger">
+            <div class="card-body p-4">
+              <div class="text-muted small fw-black text-uppercase mb-2 opacity-75">Moderation Backlog</div>
+              <div class="fs-1 fw-black text-doc-heading mb-1 d-flex align-items-end">
+                {{ kpis.pendingModeration }}
+                <span class="fs-12 text-danger ms-3 mb-2 px-3 py-1 bg-soft-danger rounded-pill fw-black text-uppercase">Admin Task</span>
+              </div>
+              <p class="small mb-0 text-doc-secondary opacity-75">Reported items pending enforcement actions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-end mb-4">
+        <h6 class="mb-0 fw-black text-muted text-uppercase letter-spacing-1">Health & Stress Trend</h6>
+        <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill fw-black fs-11 shadow-sm">Last 30 Days</span>
+      </div>
+      <div class="card shadow-doc rounded-4 border-0 p-4 bg-white">
+        <div class="chart-wrapper">
+          <canvas #complianceCanvas></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW ANALYTICS SECTION -->
+    <section class="mb-5 animate-fade-in">
+      <div class="row g-4">
+        <!-- Sentiment Breakdown -->
+        <div class="col-lg-4">
+          <div class="card shadow-doc border-0 rounded-4 h-100 bg-white">
+            <div class="card-body p-4">
+              <h6 class="fw-black text-doc-heading mb-4 ls-n1 fs-15">Sentiment Overview</h6>
+              <div class="chart-container-small">
+                <canvas #sentimentCanvas></canvas>
+              </div>
+              <div class="mt-4 pt-2 border-top">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-doc-secondary small fw-bold"><i class="fa-solid fa-circle text-success me-2"></i> Clinical Harmony</span>
+                  <span class="fw-black text-doc-heading small">{{ sentimentDist?.positive || 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-doc-secondary small fw-bold"><i class="fa-solid fa-circle text-danger me-2"></i> Distress Hits</span>
+                  <span class="fw-black text-doc-heading small">{{ sentimentDist?.negative || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Mix -->
+        <div class="col-lg-4">
+          <div class="card shadow-doc border-0 rounded-4 h-100 bg-white">
+            <div class="card-body p-4">
+              <h6 class="fw-black text-doc-heading mb-4 ls-n1 fs-15">Platform Engagement</h6>
+              <div class="chart-container-small">
+                <canvas #activityCanvas></canvas>
+              </div>
+              <div class="mt-4 pt-2 border-top">
+                <div class="row text-center g-2">
+                  <div class="col-6">
+                    <div class="p-2 bg-light rounded-3">
+                      <div class="small text-muted fw-bold">Posts</div>
+                      <div class="fw-black">{{ engagementMix?.publications || 0 }}</div>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="p-2 bg-light rounded-3">
+                      <div class="small text-muted fw-bold">MSGs</div>
+                      <div class="fw-black">{{ engagementMix?.messages || 0 }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Intervention -->
+        <div class="col-lg-4">
+          <div class="card shadow-doc border-0 rounded-4 h-100 bg-white">
+            <div class="card-body p-4">
+              <h6 class="fw-black text-doc-heading mb-4 ls-n1 fs-15">Intelligence Utility</h6>
+              <div class="d-flex flex-column gap-4 h-100">
+                <div class="p-3 rounded-4 bg-soft-primary border border-primary border-opacity-10 shadow-sm">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fa-solid fa-microchip text-primary me-2"></i>
+                    <span class="text-primary small fw-black text-uppercase letter-spacing-1">Handover summaries</span>
+                  </div>
+                  <div class="fs-2 fw-black text-doc-heading ls-n1">{{ aiImpact?.summariesGenerated || 0 }}</div>
+                  <small class="text-doc-secondary fw-bold opacity-75">Automated clinical transitions</small>
+                </div>
+                
+                <div class="p-3 rounded-4 bg-soft-info border border-info border-opacity-10 shadow-sm">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fa-solid fa-eye text-info me-2"></i>
+                    <span class="text-info small fw-black text-uppercase letter-spacing-1">Retention Impact</span>
+                  </div>
+                  <div class="fs-2 fw-black text-doc-heading ls-n1">3.2x</div>
+                  <small class="text-doc-secondary fw-bold opacity-75">Usage lift over manual logs</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 2. AI INTELLIGENCE PULSE VIEW -->
+  <div *ngSwitchCase="'ai'" class="animate-fade-in mt-4">
+    <section class="mb-5 animate-fade-in" *ngIf="clinicalPulse">
+      <div class="card shadow-doc border-0 rounded-4 overflow-hidden bg-white border-top border-4 border-primary">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h6 class="fw-black text-doc-heading mb-0 ls-n1 fs-16">
+              <i class="fa-solid fa-brain text-primary me-2 pulse-slow"></i> Intelligence Center: Clinical Pulse
+            </h6>
+            <span class="badge bg-soft-primary text-primary px-3 py-1 rounded-pill fw-black fs-11">
+              AI ANALYZED ({{ clinicalPulse.totalAnalyzed }} Events)
+            </span>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="p-3 bg-light rounded-4 h-100 border border-opacity-10 shadow-sm position-relative">
+                <i class="fa-solid fa-quote-left text-primary opacity-25 position-absolute" style="top: 1rem; right: 1rem; font-size: 2rem;"></i>
+                <div class="text-muted small fw-black text-uppercase mb-2">AI Behavioral Insight</div>
+                <p class="fs-15 text-doc-heading fw-medium mb-0 pe-4 ai-output">
+                  "{{ clinicalPulse.aiSummary }}"
+                </p>
+              </div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="d-flex flex-column gap-3">
+                <div class="p-3 bg-white border rounded-4 shadow-sm">
+                  <div class="text-muted small fw-black text-uppercase mb-2">Thematic Clusters</div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span *ngFor="let theme of clinicalPulse.topThemes" 
+                          class="badge bg-soft-info text-info border border-info border-opacity-10 px-3 py-2 rounded-pill fw-bold fs-11">
+                      <i class="fa-solid fa-tags me-1 opacity-50"></i> {{ theme.trim() }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white border rounded-4 shadow-sm d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="text-muted small fw-black text-uppercase">Sentiment Velocity</div>
+                    <div class="fw-black fs-18" [ngClass]="getVelocityColor(clinicalPulse.sentimentVelocity)">
+                      {{ clinicalPulse.sentimentVelocity }}
+                    </div>
+                  </div>
+                  <div class="velocity-indicator">
+                    <i class="fa-solid fa-arrow-trend-up fs-2 text-success" *ngIf="clinicalPulse.sentimentVelocity.toLowerCase().includes('improving')"></i>
+                    <i class="fa-solid fa-arrow-trend-down fs-2 text-danger" *ngIf="clinicalPulse.sentimentVelocity.toLowerCase().includes('degrading')"></i>
+                    <i class="fa-solid fa-arrows-left-right fs-2 text-primary" *ngIf="clinicalPulse.sentimentVelocity.toLowerCase().includes('stable')"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW: HISTORICAL RETROSPECTIVE GENERATOR -->
+    <section class="mb-5 animate-fade-in">
+      <div class="card shadow-doc border-0 rounded-4 overflow-hidden bg-white">
+        <div class="card-header bg-soft-primary border-0 p-4 d-flex align-items-center justify-content-between">
+          <h6 class="fw-black text-primary mb-0 ls-n1 fs-16">
+            <i class="fa-solid fa-clock-rotate-left me-2"></i> Historical Intelligence Snapshot (On-Demand)
+          </h6>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm rounded-pill px-3 border-0 shadow-sm fw-bold text-muted fs-12" 
+                    style="width: 220px;" [(ngModel)]="retroGroupId">
+              <option [ngValue]="undefined" disabled>Select Clinical Group...</option>
+              <option *ngFor="let g of groups" [value]="g.id">{{ g.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <button class="btn btn-soft-primary fw-black fs-12 px-4 rounded-pill transition-all" 
+                    [disabled]="retroLoading" (click)="fetchRetrospective(24)">
+              <i class="fa-solid fa-bolt me-1"></i> LAST 24 HOURS
+            </button>
+            <button class="btn btn-soft-primary fw-black fs-12 px-4 rounded-pill transition-all" 
+                    [disabled]="retroLoading" (click)="fetchRetrospective(48)">
+              <i class="fa-solid fa-calendar me-1"></i> LAST 48 HOURS
+            </button>
+            <button class="btn btn-soft-primary fw-black fs-12 px-4 rounded-pill transition-all" 
+                    [disabled]="retroLoading" (click)="fetchRetrospective(168)">
+              <i class="fa-solid fa-calendar-days me-1"></i> LAST 7 DAYS
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="retroLoading" class="text-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="text-muted small fw-bold mb-0">AI is reconstructing clinical events...</p>
+          </div>
+
+          <!-- Result State -->
+          <div *ngIf="activeRetrospective && !retroLoading" class="animate-fade-in">
+            
+            <!-- Header badge -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <span class="badge bg-primary text-white px-3 py-2 rounded-pill fw-black fs-11 shadow-sm">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i>
+                RETROSPECTIVE: LAST {{ activeRetrospective.window === 168 ? '7 DAYS' : activeRetrospective.window + 'H' }}
+              </span>
+              <span class="text-muted small fw-black opacity-50 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-microchip text-primary opacity-50"></i> GENERATED NOW
+              </span>
+            </div>
+
+            <!-- Parsed sections -->
+            <div *ngIf="activeRetrospective.parsedSections?.length > 0" class="row g-4 mb-4">
+              <div *ngFor="let section of activeRetrospective.parsedSections" class="col-12">
+                <div class="rounded-4 border p-4 shadow-sm" [ngClass]="section.bgColor" style="border-opacity: 0.2 !important;">
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fs-20">{{ section.icon }}</span>
+                    <h6 class="fw-black mb-0 fs-14" [ngClass]="section.color">{{ section.title }}</h6>
+                  </div>
+                  <ul class="list-unstyled mb-0">
+                    <li *ngFor="let item of section.items" 
+                        class="d-flex align-items-start gap-2 mb-2 fs-13 text-doc-secondary fw-medium">
+                      <i class="fa-solid fa-circle-dot mt-1 flex-shrink-0 opacity-40 fs-10" [ngClass]="section.color"></i>
+                      <span>{{ item }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fallback: raw text if parsing produced nothing -->
+            <div *ngIf="!activeRetrospective.parsedSections?.length" class="p-4 bg-light rounded-4 border">
+              <p class="fs-14 text-doc-secondary fw-medium mb-0 ai-output" style="white-space: pre-line;">{{ activeRetrospective.summary }}</p>
+            </div>
+
+            <!-- Side panels -->
+            <div class="row g-3 mt-1">
+              <div class="col-md-6">
+                <div class="p-3 bg-soft-info text-info rounded-4 border border-info border-opacity-10 shadow-sm">
+                  <div class="small fw-black text-uppercase mb-2"><i class="fa-solid fa-list-check me-1"></i> Pending Tasks Found</div>
+                  <ul class="list-unstyled mb-0 small fw-bold">
+                    <li *ngFor="let task of activeRetrospective.pendingTasks" class="mb-2 d-flex align-items-start">
+                      <i class="fa-solid fa-circle-chevron-right me-2 mt-1 opacity-50"></i> {{ task }}
+                    </li>
+                    <li *ngIf="!activeRetrospective.pendingTasks?.length" class="opacity-50">No unresolved tasks in this window.</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-soft-danger text-danger rounded-4 border border-danger border-opacity-10 shadow-sm">
+                  <div class="small fw-black text-uppercase mb-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> Critical Concerns</div>
+                  <ul class="list-unstyled mb-0 small fw-bold">
+                    <li *ngFor="let alert of activeRetrospective.criticalAlerts" class="mb-2 d-flex align-items-start">
+                      <i class="fa-solid fa-warning me-2 mt-1 opacity-50"></i> {{ alert }}
+                    </li>
+                    <li *ngIf="!activeRetrospective.criticalAlerts?.length" class="opacity-50">No high-risk segments identified.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!activeRetrospective && !retroLoading" class="text-center py-5 border rounded-4 bg-light border-dashed">
+            <i class="fa-solid fa-wand-magic-sparkles fs-1 text-primary opacity-25 mb-3"></i>
+            <h6 class="fw-black text-muted mb-1">No Active Snapshot</h6>
+            <p class="text-muted small mb-0">Choose a clinical group and a time window to generate an AI retrospective.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 3. GROUP & MEMBER MANAGEMENT VIEW -->
+  <div *ngSwitchCase="'groups'" class="animate-fade-in mt-4">
+    <section class="mb-5">
+      <div class="card shadow border-0 p-4 mb-4 rounded-4 bg-white">
+        <div class="input-group search-form rounded-pill bg-grey px-3 py-1">
+          <span class="input-group-text bg-transparent border-0"><i
+              class="fa-solid fa-user-shield text-primary"></i></span>
+          <input type="number" class="form-control bg-transparent border-0 ps-2"
+            placeholder="Enter System User ID to inspect group memberships..." [(ngModel)]="searchUserId">
+          <button class="btn btn-primary fw-bold rounded-pill px-4 ms-2 my-1" (click)="doSearch()">Inspect
+            Member</button>
+        </div>
+      </div>
+
+      <div *ngIf="searchResultGroups.length > 0"
+        class="card shadow border-0 mb-5 rounded-4 overflow-hidden border-start border-5 border-primary animate-fade-in">
+        <div class="card-header bg-soft-primary border-0 py-3 ps-4 d-flex justify-content-between align-items-center">
+          <span class="fw-bold text-primary"><i class="fa-solid fa-search me-2"></i> Results for User
+            #{{searchUserId}}</span>
+          <button class="btn btn-sm btn-link text-primary text-decoration-none fw-bold"
+            (click)="searchResultGroups = []">Clear</button>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li *ngFor="let g of searchResultGroups"
+            class="list-group-item d-flex justify-content-between align-items-center p-4 border-bottom">
+            <div>
+              <h6 class="mb-1 fw-bold text-dark">{{ g.name }}</h6>
+              <span class="badge rounded-pill small fw-bold" [ngClass]="getCategoryBadgeClass(g.category)">{{ g.category }}</span>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold text-dark">{{ g.memberCount }}</div>
+              <div class="text-muted small">Total Members</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- DEFAULT ROLE-BASED GROUPS TABLE -->
+    <section class="mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h6 class="mb-0 fw-black text-muted text-uppercase letter-spacing-1">
+          <i class="fa-solid fa-star text-warning me-2"></i> Default Role Groups
+        </h6>
+        <span class="badge bg-soft-warning text-warning px-3 py-2 rounded-pill fw-black fs-11">
+          Auto-populated on startup
+        </span>
+      </div>
+      <div class="row g-4">
+        <div *ngFor="let dg of defaultGroups" class="col-md-6">
+          <div class="card shadow-doc border-0 rounded-4 overflow-hidden bg-white h-100"
+               [ngClass]="dg.defaultForRole === 'PATIENT' ? 'border-top border-4 border-primary' : 'border-top border-4 border-success'">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                     style="width: 48px; height: 48px;"
+                     [ngClass]="dg.defaultForRole === 'PATIENT' ? 'bg-soft-primary' : 'bg-soft-success'">
+                  <i class="fa-solid fs-18"
+                     [ngClass]="dg.defaultForRole === 'PATIENT' ? 'fa-user-injured text-primary' : 'fa-user-doctor text-success'"></i>
+                </div>
+                <div>
+                  <h6 class="fw-black text-doc-heading mb-0 ls-n1">{{ dg.name }}</h6>
+                  <span class="badge rounded-pill px-2 py-1 fs-10 fw-black mt-1"
+                        [ngClass]="dg.defaultForRole === 'PATIENT' ? 'bg-soft-primary text-primary' : 'bg-soft-success text-success'">
+                    DEFAULT FOR {{ dg.defaultForRole }}
+                  </span>
+                </div>
+              </div>
+              <p class="text-muted fs-13 fw-medium mb-3">{{ dg.description }}</p>
+              <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-users text-muted opacity-50"></i>
+                  <span class="fw-black text-doc-heading fs-18">{{ dg.memberCount }}</span>
+                  <span class="text-muted fs-12 fw-medium">members</span>
+                </div>
+                <span class="text-muted fs-11 fw-medium">
+                  <i class="fa-regular fa-clock me-1"></i>
+                  {{ dg.createdAt | date:'MMM d, y' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="defaultGroups.length === 0" class="col-12 text-center py-4 text-muted">
+          <i class="fa-solid fa-spinner fa-spin me-2"></i> Loading default groups...
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5">
+      <div class="section-header text-start mb-4">
+        <h3 class="h6 fw-bold text-muted text-uppercase" style="letter-spacing: 1px;">Community Directory</h3>
+      </div>
+
+      <!-- Create Group Button + Form -->
+      <div class="mb-4">
+        <button *ngIf="!showCreateGroupForm" 
+                class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm"
+                (click)="showCreateGroupForm = true">
+          <i class="fa-solid fa-plus me-2"></i> Create New Group
+        </button>
+
+        <div *ngIf="showCreateGroupForm" class="card shadow-doc border-0 rounded-4 p-4 bg-white animate-fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h6 class="fw-black text-doc-heading mb-0">
+              <i class="fa-solid fa-users-gear text-primary me-2"></i> New Community Group
+            </h6>
+            <button class="btn btn-light btn-sm rounded-circle" (click)="showCreateGroupForm = false">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-muted small text-uppercase">Group Name *</label>
+              <input type="text" class="form-control rounded-3 border-0 bg-light shadow-sm"
+                     [(ngModel)]="newGroupName" placeholder="e.g. Alzheimer's Patients Circle">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-muted small text-uppercase">Category</label>
+              <select class="form-select rounded-3 border-0 bg-light shadow-sm" [(ngModel)]="newGroupCategory">
+                <option value="PATIENTS">Patients</option>
+                <option value="FAMILY">Family Support</option>
+                <option value="PROFESSIONAL">Clinical Professionals</option>
+                <option value="MIXED">Mixed Community</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold text-muted small text-uppercase">Description</label>
+              <textarea class="form-control rounded-3 border-0 bg-light shadow-sm" rows="2"
+                        [(ngModel)]="newGroupDescription" placeholder="Brief description of this group's purpose..."></textarea>
+            </div>
+            <div class="col-12">
+              <div class="p-3 rounded-3 bg-soft-warning border border-warning border-opacity-25">
+                <div class="form-check form-switch d-flex align-items-center gap-3 mb-0" (click)="$event.stopPropagation()">
+                  <input class="form-check-input" type="checkbox" id="defaultGroupToggle"
+                         [(ngModel)]="newGroupIsDefault">
+                  <label class="form-check-label fw-bold text-doc-heading" for="defaultGroupToggle">
+                    <i class="fa-solid fa-star text-warning me-1"></i>
+                    Default Group — auto-join users by role on first login
+                  </label>
+                </div>
+                <div *ngIf="newGroupIsDefault" class="mt-3">
+                  <label class="form-label fw-bold text-muted small text-uppercase">Auto-join for role</label>
+                  <select class="form-select form-select-sm rounded-3 border-0 bg-white shadow-sm" [(ngModel)]="newGroupDefaultRole">
+                    <option value="">Select a role...</option>
+                    <option value="PATIENT">PATIENT</option>
+                    <option value="DOCTOR">DOCTOR</option>
+                    <option value="CAREGIVER">CAREGIVER</option>
+                    <option value="FAMILY">FAMILY</option>
+                  </select>
+                  <small class="text-muted mt-1 d-block">
+                    <i class="fa-solid fa-circle-info me-1"></i>
+                    Users with this role will be automatically added when they first access the collaboration module.
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button class="btn btn-light fw-bold rounded-pill px-4" (click)="showCreateGroupForm = false">Cancel</button>
+            <button class="btn btn-primary fw-bold rounded-pill px-5 shadow-sm"
+                    (click)="submitCreateGroup()"
+                    [disabled]="!newGroupName.trim() || (newGroupIsDefault && !newGroupDefaultRole)">
+              <i class="fa-solid fa-check me-2"></i> Create Group
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive card shadow rounded-4 border-0 overflow-hidden bg-white">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="bg-soft-primary border-bottom border-black border-opacity-10">
+            <tr>
+              <th class="ps-4 py-3 text-uppercase small fw-bold text-primary">Group Entity</th>
+              <th class="py-3 text-uppercase small fw-bold text-primary">Classification</th>
+              <th class="py-3 text-uppercase small fw-bold text-primary text-center">Members</th>
+              <th class="py-3 text-uppercase small fw-bold text-primary">Lead/Owner</th>
+              <th class="text-end pe-4 py-3 text-uppercase small fw-bold text-primary">Management</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let g of groups">
+              <td class="ps-4">
+                <div class="fw-bold text-dark">{{ g.name }}</div>
+                <div class="text-muted small truncate-1" style="max-width: 200px;">{{ g.description }}</div>
+              </td>
+              <td><span class="badge px-3 py-2 rounded-pill small fw-bold" [ngClass]="getCategoryBadgeClass(g.category)">{{ g.category
+                  }}</span></td>
+              <td class="text-center fw-bold">{{ g.memberCount }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="bg-grey rounded-circle me-2 d-flex align-items-center justify-content-center"
+                    style="width: 30px; height: 30px;">
+                    <i class="fa-solid fa-user fs-12 text-muted"></i>
+                  </div>
+                  <span class="text-muted small">{{ g.ownerName || 'Auto-System' }}</span>
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <button class="btn btn-soft-primary btn-sm fw-bold rounded-pill px-3 me-2" (click)="startEdit(g)">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                </button>
+                <button class="btn btn-soft-danger btn-sm fw-bold rounded-pill px-3" (click)="deleteGroup(g.id)">
+                  <i class="fa-solid fa-archive me-1"></i> Archive
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="groups.length === 0">
+              <td colspan="5" class="text-center py-5 text-muted">
+                <i class="fa-solid fa-users-slash fs-2 opacity-25 mb-2 d-block"></i>
+                No active community groups found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- 3. MODERATION QUEUE VIEW -->
+  <div *ngSwitchCase="'moderation'" class="animate-fade-in mt-4">
+    <section class="mb-5">
+      <div class="section-header text-start mb-4">
+        <h3 class="h6 fw-bold text-muted text-uppercase" style="letter-spacing: 1px;">Moderation Backlog</h3>
+      </div>
+      <div class="card shadow border-0 table-responsive rounded-4 overflow-hidden bg-white">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="bg-soft-primary border-bottom border-black border-opacity-10">
+            <tr>
+              <th class="ps-4 py-3 text-uppercase small fw-bold text-primary">Incident Author</th>
+              <th class="py-3 text-uppercase small fw-bold text-primary">Flag Reason</th>
+              <th class="py-3 text-uppercase small fw-bold text-primary w-25">Reported Content</th>
+              <th class="text-end pe-4 py-3 text-uppercase small fw-bold text-primary">Resolution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of moderation">
+              <td class="ps-4">
+                <div class="fw-bold text-dark d-flex align-items-center">
+                  {{ m.authorName }}
+                  <span class="ms-2 badge bg-danger rounded-circle p-1" style="width: 8px; height: 8px;"
+                    title="High Risk"></span>
+                </div>
+                <div class="small text-muted">{{ m.flaggedAt | date : 'short' }}</div>
+              </td>
+              <td><span class="badge bg-soft-danger text-danger px-3 py-2 rounded-pill small fw-bold text-uppercase">{{
+                  m.reason }}</span>
+              </td>
+              <td>
+                <div class="p-3 bg-grey rounded-4 small text-wrap text-break border shadow-sm italic"
+                  style="max-width: 400px; border-style: dashed !important;">
+                  "{{ m.contentPreview }}"
+                </div>
+              </td>
+              <td class="text-end pe-4 text-nowrap">
+                <div class="d-flex flex-column gap-2 align-items-end">
+                  <button class="btn btn-primary btn-sm fw-bold rounded-pill px-3 shadow-sm w-100"
+                    (click)="approvePost(m.publicationId)">
+                    <i class="fa-solid fa-check-double me-1"></i> Approve
+                  </button>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-soft-danger btn-sm fw-bold rounded-pill px-3 shadow-sm"
+                      (click)="deletePost(m.publicationId)">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm fw-bold rounded-pill px-3 shadow-sm"
+                      (click)="banUser(m.authorId)">
+                      <i class="fa-solid fa-user-slash me-1"></i> Ban Author
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="moderation.length === 0">
+              <td colspan="4" class="text-center py-5">
+                <div class="text-success mb-3"><i class="fa-solid fa-shield-check fs-1 opacity-25"></i></div>
+                <h5 class="fw-bold text-dark">System Safely Maintained</h5>
+                <p class="small text-muted mb-0">The moderation queue is currently clear.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- 4. ANNOUNCEMENTS VIEW -->
+  <div *ngSwitchCase="'announcements'" class="animate-fade-in mt-4">
+    <section class="mb-5">
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="card shadow-doc border-0 p-5 rounded-4 bg-white border-top border-4 border-primary">
+            <div class="d-flex align-items-center mb-4">
+              <div
+                class="bg-soft-primary text-primary rounded-circle p-3 me-3 d-flex align-items-center justify-content-center shadow-sm">
+                <i class="fa-solid fa-broadcast-tower fs-4 pulse-slow"></i>
+              </div>
+              <div>
+                <h4 class="mb-0 fw-black text-doc-heading ls-n1">Broadcast Command Center</h4>
+                <p class="text-muted small mb-0">Target specific clinical communities or push a global announcement.</p>
+              </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+              <div class="col-md-6">
+                <label class="form-label-doc">Target Audience</label>
+                <div class="input-container-doc">
+                  <i class="fa-solid fa-users input-icon-doc"></i>
+                  <select class="form-select-doc w-100" [(ngModel)]="announcementTargetGroupId">
+                    <option [ngValue]="null">🌍 Global (All Communities)</option>
+                    <optgroup label="Clinical Groups">
+                      <option *ngFor="let g of groups" [value]="g.id">👤 {{ g.name }}</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-doc">Release Schedule</label>
+                <div class="input-container-doc">
+                  <i class="fa-solid fa-clock input-icon-doc"></i>
+                  <input type="datetime-local" #timeInput
+                         class="form-control-doc w-100 ps-4"
+                         (click)="timeInput.showPicker()"
+                         [(ngModel)]="announcementScheduledAt">
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label-doc">Message Content</label>
+              <textarea
+                class="form-control-doc w-100 p-4"
+                rows="6" placeholder="Draft your professional announcement here..."
+                [(ngModel)]="announcementText" style="resize: none; height: auto;"></textarea>
+            </div>
+            
+            <div class="text-end">
+              <button class="btn btn-primary btn-lg fw-black rounded-pill px-5 shadow transition-all hov-grow"
+                (click)="sendAnnouncement()" [disabled]="!announcementText">
+                <i class="fa-solid fa-paper-plane me-2"></i> {{ announcementScheduledAt ? 'Schedule Publication' : 'Broadcast Now' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- SCHEDULED POSTS LIST -->
+          <div class="mt-5">
+            <div class="section-header text-start mb-4">
+              <h3 class="h6 fw-bold text-muted text-uppercase ls-1"><i class="fa-solid fa-clock-rotate-left me-2"></i>Upcoming Broadcasts ({{scheduledAnnouncements.length}})</h3>
+            </div>
+            
+            <div class="row g-3">
+              <div *ngFor="let s of scheduledAnnouncements" class="col-12">
+                <div class="card shadow-sm border-0 rounded-4 bg-white p-3 border-start border-4 border-warning">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-soft-warning text-warning rounded-pill px-2 py-1 fs-11 fw-black">
+                          <i class="fa-solid fa-calendar-day me-1"></i> {{ s.createdAt | date:'medium' }}
+                        </span>
+                        <span class="badge bg-soft-primary text-primary rounded-pill px-2 py-1 fs-11 fw-black">
+                          <i class="fa-solid fa-users me-1"></i> {{ s.groupName || 'Global community' }}
+                        </span>
+                      </div>
+                      <p class="mb-0 text-doc-heading fw-bold small truncate-2 opacity-75">
+                        {{ s.content }}
+                      </p>
+                    </div>
+                    <button class="btn btn-soft-danger btn-sm rounded-pill px-3 fw-bold ms-3" (click)="cancelAnnouncement(s.id)">
+                      <i class="fa-solid fa-xmark me-1"></i> Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div *ngIf="scheduledAnnouncements.length === 0" class="col-12 text-center py-5 bg-light rounded-4 border border-dashed">
+                <i class="fa-solid fa-calendar-check fs-2 text-muted opacity-25 mb-2"></i>
+                <p class="text-muted small mb-0">No announcements currently scheduled.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-doc rounded-4 bg-white h-100 overflow-hidden">
+            <div class="card-header bg-emerald border-0 p-4 text-white">
+              <h6 class="fw-black mb-0 ls-n1"><i class="fa-solid fa-shield-halved me-2"></i> Admin Best Practices</h6>
+            </div>
+            <div class="card-body p-4">
+              <div class="d-flex flex-column gap-4">
+                <div class="d-flex gap-3">
+                  <div class="icon-box bg-soft-success text-success rounded-3 p-2 h-fit">
+                    <i class="fa-solid fa-feather"></i>
+                  </div>
+                  <div>
+                    <div class="fw-black text-doc-heading fs-13 mb-1">Tone of Voice</div>
+                    <p class="text-muted small mb-0">Maintain a professional and empathetic tone. Use clinical-grade language for medical updates.</p>
+                  </div>
+                </div>
+                
+                <div class="d-flex gap-3">
+                  <div class="icon-box bg-soft-primary text-primary rounded-3 p-2 h-fit">
+                    <i class="fa-solid fa-clock"></i>
+                  </div>
+                  <div>
+                    <div class="fw-black text-doc-heading fs-13 mb-1">Strategic Scheduling</div>
+                    <p class="text-muted small mb-0">Schedule maintenance warnings during low-activity hours (e.g., 2 AM) to minimize disruption.</p>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                  <div class="icon-box bg-soft-info text-info rounded-3 p-2 h-fit">
+                    <i class="fa-solid fa-bullseye"></i>
+                  </div>
+                  <div>
+                    <div class="fw-black text-doc-heading fs-13 mb-1">Precise Targeting</div>
+                    <p class="text-muted small mb-0">Avoid spamming the global feed. Target specific groups when the info is relevant only to them.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-5 p-3 bg-light rounded-4 border border-dashed text-center">
+                <i class="fa-solid fa-user-check text-primary fs-3 mb-2 opacity-50"></i>
+                <div class="small fw-bold text-doc-heading">Admin Verified</div>
+                <div class="text-muted fs-11">All broadcasts are signed with your professional identity.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 5. CONTENT MANAGEMENT VIEW -->
+  <div *ngSwitchCase="'content'" class="animate-fade-in mt-4">
+
+    <!-- Top KPI strip -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-4 shadow-sm border-start border-3 border-primary">
+          <div class="bg-soft-primary rounded-3 p-2 flex-shrink-0">
+            <i class="fa-solid fa-newspaper text-primary fs-16"></i>
+          </div>
+          <div>
+            <div class="fw-black text-doc-heading fs-22 lh-1">{{ contentPosts.length }}</div>
+            <div class="text-muted fs-11 fw-bold text-uppercase">Posts</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-4 shadow-sm border-start border-3 border-info">
+          <div class="bg-soft-info rounded-3 p-2 flex-shrink-0">
+            <i class="fa-solid fa-comments text-info fs-16"></i>
+          </div>
+          <div>
+            <div class="fw-black text-doc-heading fs-22 lh-1">{{ contentMessages.length }}</div>
+            <div class="text-muted fs-11 fw-bold text-uppercase">Group Msgs</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-4 shadow-sm border-start border-3 border-danger">
+          <div class="bg-soft-danger rounded-3 p-2 flex-shrink-0">
+            <i class="fa-solid fa-triangle-exclamation text-danger fs-16"></i>
+          </div>
+          <div>
+            <div class="fw-black text-danger fs-22 lh-1">{{ contentTotalDistressed }}</div>
+            <div class="text-muted fs-11 fw-bold text-uppercase">Distress</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-4 shadow-sm border-start border-3 border-warning">
+          <div class="bg-soft-warning rounded-3 p-2 flex-shrink-0">
+            <i class="fa-solid fa-flag text-warning fs-16"></i>
+          </div>
+          <div>
+            <div class="fw-black text-warning fs-22 lh-1">{{ contentFlaggedCount }}</div>
+            <div class="text-muted fs-11 fw-bold text-uppercase">Flagged</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Two-panel layout -->
+    <div class="row g-4">
+
+      <!-- LEFT: Navigation sidebar -->
+      <div class="col-lg-3">
+        <div class="card shadow-sm border-0 rounded-4 bg-white overflow-hidden">
+          <div class="p-3 border-bottom bg-soft-primary">
+            <span class="fw-black text-primary text-uppercase fs-11 letter-spacing-1">
+              <i class="fa-solid fa-layer-group me-2"></i>Content Sections
+            </span>
+          </div>
+          <div class="p-2">
+            <button class="btn w-100 text-start rounded-3 px-3 py-3 mb-1 d-flex align-items-center gap-3 transition-all"
+                    [ngClass]="contentTab === 'posts' ? 'btn-primary shadow-sm' : 'btn-light'"
+                    (click)="onContentTabChange('posts')">
+              <div class="rounded-3 p-2 flex-shrink-0" [ngClass]="contentTab === 'posts' ? 'bg-white bg-opacity-25' : 'bg-soft-primary'">
+                <i class="fa-solid fa-newspaper fs-14" [ngClass]="contentTab === 'posts' ? 'text-white' : 'text-primary'"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-black fs-13" [ngClass]="contentTab === 'posts' ? 'text-white' : 'text-doc-heading'">Posts</div>
+                <div class="fs-11 fw-medium opacity-75" [ngClass]="contentTab === 'posts' ? 'text-white' : 'text-muted'">{{ contentPosts.length }} recent</div>
+              </div>
+            </button>
+            <button class="btn w-100 text-start rounded-3 px-3 py-3 mb-1 d-flex align-items-center gap-3 transition-all"
+                    [ngClass]="contentTab === 'messages' ? 'btn-primary shadow-sm' : 'btn-light'"
+                    (click)="onContentTabChange('messages')">
+              <div class="rounded-3 p-2 flex-shrink-0" [ngClass]="contentTab === 'messages' ? 'bg-white bg-opacity-25' : 'bg-soft-info'">
+                <i class="fa-solid fa-comments fs-14" [ngClass]="contentTab === 'messages' ? 'text-white' : 'text-info'"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-black fs-13" [ngClass]="contentTab === 'messages' ? 'text-white' : 'text-doc-heading'">Group Messages</div>
+                <div class="fs-11 fw-medium opacity-75" [ngClass]="contentTab === 'messages' ? 'text-white' : 'text-muted'">{{ contentMessages.length }} recent</div>
+              </div>
+            </button>
+            <button class="btn w-100 text-start rounded-3 px-3 py-3 d-flex align-items-center gap-3 transition-all"
+                    [ngClass]="contentTab === 'dms' ? 'btn-primary shadow-sm' : 'btn-light'"
+                    (click)="onContentTabChange('dms')">
+              <div class="rounded-3 p-2 flex-shrink-0" [ngClass]="contentTab === 'dms' ? 'bg-white bg-opacity-25' : 'bg-soft-secondary'">
+                <i class="fa-solid fa-message-lines fs-14" [ngClass]="contentTab === 'dms' ? 'text-white' : 'text-muted'"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-black fs-13" [ngClass]="contentTab === 'dms' ? 'text-white' : 'text-doc-heading'">DM Analytics</div>
+                <div class="fs-11 fw-medium opacity-75" [ngClass]="contentTab === 'dms' ? 'text-white' : 'text-muted'">{{ dmMeta.length }} conversations</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Content panel -->
+      <div class="col-lg-9">
+        <div class="card shadow-sm border-0 rounded-4 bg-white overflow-hidden">
+
+          <!-- Panel header -->
+          <div class="p-4 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+              <h6 class="fw-black text-doc-heading mb-0 ls-n1">
+                <i class="fa-solid me-2 text-primary"
+                   [ngClass]="contentTab === 'posts' ? 'fa-newspaper' : contentTab === 'messages' ? 'fa-comments' : 'fa-message-lines'"></i>
+                {{ contentTab === 'posts' ? 'Posts' : contentTab === 'messages' ? 'Group Messages' : 'Direct Message Analytics' }}
+              </h6>
+              <p class="text-muted fs-12 fw-medium mb-0 mt-1">
+                {{ contentTab === 'dms' ? (filteredDmMeta.length + ' of ' + dmMeta.length + ' conversations') : (filteredContentItems.length + ' items') }}
+              </p>
+            </div>
+            <div *ngIf="contentTab !== 'dms'" class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm fw-bold rounded-pill px-3 transition-all"
+                      [ngClass]="contentSearchQuery === '__distressed__' ? 'btn-danger' : 'btn-soft-danger'"
+                      (click)="contentSearchQuery = contentSearchQuery === '__distressed__' ? '' : '__distressed__'; contentPage = 1">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> Distressed
+              </button>
+              <div class="input-group rounded-pill overflow-hidden border" style="max-width: 220px;">
+                <span class="input-group-text bg-white border-0 ps-3">
+                  <i class="fa-solid fa-magnifying-glass text-muted fs-12"></i>
+                </span>
+                <input type="text" class="form-control border-0 bg-white fs-13 py-2" placeholder="Search..."
+                       [(ngModel)]="contentSearchQuery" (ngModelChange)="contentPage = 1">
+                <button *ngIf="contentSearchQuery" class="btn btn-light border-0 pe-3"
+                        (click)="contentSearchQuery = ''; contentPage = 1">
+                  <i class="fa-solid fa-xmark fs-12"></i>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="contentTab === 'dms'" class="d-flex align-items-center gap-2">
+              <div class="form-check form-switch d-flex align-items-center gap-2 mb-0" (click)="$event.stopPropagation()">
+                <input class="form-check-input" type="checkbox" id="distressFilterPanel"
+                       [(ngModel)]="dmShowOnlyDistressed" (ngModelChange)="dmCurrentPage = 1">
+                <label class="form-check-label fw-bold text-danger fs-12 cursor-pointer" for="distressFilterPanel">
+                  <i class="fa-solid fa-triangle-exclamation me-1"></i> Distressed Only
+                </label>
+              </div>
+              <div class="input-group rounded-pill overflow-hidden border" style="max-width: 180px;">
+                <span class="input-group-text bg-white border-0 ps-3">
+                  <i class="fa-solid fa-magnifying-glass text-muted fs-12"></i>
+                </span>
+                <input type="text" class="form-control border-0 bg-white fs-13 py-2" placeholder="Search..."
+                       [(ngModel)]="dmFilterQuery" (ngModelChange)="dmCurrentPage = 1">
+                <button *ngIf="dmFilterQuery" class="btn btn-light border-0 pe-3"
+                        (click)="dmFilterQuery = ''; dmCurrentPage = 1">
+                  <i class="fa-solid fa-xmark fs-12"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div *ngIf="contentLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted small fw-bold mt-3 mb-0">Loading...</p>
+          </div>
+
+          <!-- POSTS / MESSAGES list -->
+          <div *ngIf="!contentLoading && contentTab !== 'dms'">
+            <div *ngFor="let item of paginatedContentItems; let last = last"
+                 class="d-flex align-items-center gap-3 px-4 py-3 transition-hover"
+                 [ngClass]="{'border-bottom': !last, 'content-row-distressed': item.distressed, 'content-row-flagged': !item.distressed && item.moderationStatus === 'PENDING_REVIEW'}">
+              <div class="flex-shrink-0" style="width: 4px; height: 40px; border-radius: 4px;"
+                   [ngClass]="item.distressed ? 'bg-danger' : item.moderationStatus === 'PENDING_REVIEW' ? 'bg-warning' : 'bg-light'"></div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="badge rounded-2 px-2 py-1 fs-10 fw-black"
+                        [ngClass]="item.type === 'POST' ? 'bg-soft-primary text-primary' : 'bg-soft-info text-info'">{{ item.type }}</span>
+                  <span *ngIf="item.distressed" class="badge bg-danger text-white rounded-2 px-2 py-1 fs-10 fw-black">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>Distress
+                  </span>
+                  <span *ngIf="item.moderationStatus === 'PENDING_REVIEW'" class="badge bg-warning text-dark rounded-2 px-2 py-1 fs-10 fw-black">
+                    <i class="fa-solid fa-flag me-1"></i>Flagged
+                  </span>
+                </div>
+                <p class="mb-0 fs-13 text-doc-secondary fw-medium text-truncate" style="max-width: 380px;">
+                  {{ item.content || '(media only)' }}
+                </p>
+              </div>
+              <div class="flex-shrink-0 d-none d-md-flex align-items-center gap-2" style="min-width: 120px;">
+                <div class="avatar-xs bg-soft-primary text-primary rounded-circle d-flex align-items-center justify-content-center fw-black fs-10">
+                  {{ (item.authorName || 'U').substring(0,2).toUpperCase() }}
+                </div>
+                <div>
+                  <div class="fs-12 fw-bold text-doc-heading text-truncate" style="max-width: 80px;">{{ item.authorName || 'Unknown' }}</div>
+                  <div *ngIf="item.groupName" class="fs-11 text-muted text-truncate" style="max-width: 80px;">{{ item.groupName }}</div>
+                </div>
+              </div>
+              <div class="flex-shrink-0 text-end d-none d-lg-block" style="min-width: 70px;">
+                <div class="fs-12 text-muted fw-medium">{{ item.createdAt | date:'MMM d' }}</div>
+                <div class="fs-11 text-muted opacity-50">{{ item.createdAt | date:'h:mm a' }}</div>
+              </div>
+              <button class="btn btn-soft-danger btn-sm rounded-3 px-2 py-1 flex-shrink-0"
+                      (click)="item.type === 'POST' ? adminDeletePost(item.id) : adminDeleteMessage(item.id)">
+                <i class="fa-solid fa-trash-can fs-12"></i>
+              </button>
+            </div>
+            <div *ngIf="filteredContentItems.length === 0" class="text-center py-5">
+              <i class="fa-solid fa-inbox fs-2 text-muted opacity-25 mb-3 d-block"></i>
+              <p class="text-muted fw-bold mb-0">No content found.</p>
+            </div>
+            <div *ngIf="contentTotalPages > 1" class="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-light">
+              <span class="text-muted fs-12 fw-medium">Page {{ contentPage }} / {{ contentTotalPages }}</span>
+              <div class="d-flex gap-1">
+                <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold" [disabled]="contentPage === 1" (click)="contentPage = contentPage - 1">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button *ngFor="let p of [].constructor(contentTotalPages); let i = index"
+                        class="btn btn-sm fw-bold rounded-circle" style="width: 32px; height: 32px;"
+                        [ngClass]="contentPage === i + 1 ? 'btn-primary' : 'btn-light text-muted'"
+                        (click)="contentPage = i + 1">{{ i + 1 }}</button>
+                <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold" [disabled]="contentPage === contentTotalPages" (click)="contentPage = contentPage + 1">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DM ANALYTICS table -->
+          <div *ngIf="!contentLoading && contentTab === 'dms'">
+            <!-- List View -->
+            <div *ngIf="!viewingDmPair">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                  <thead class="bg-light border-bottom">
+                    <tr>
+                      <th class="ps-4 py-3 fw-black text-muted text-uppercase fs-11">Conversation</th>
+                      <th class="py-3 text-center fw-black text-muted text-uppercase fs-11">Messages</th>
+                      <th class="py-3 text-center fw-black text-muted text-uppercase fs-11">Distress</th>
+                      <th class="pe-4 py-3 text-end fw-black text-muted text-uppercase fs-11">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let d of paginatedDmMeta" class="border-bottom"
+                        [ngClass]="d.distressedMessageCount > 0 ? 'dm-row-distressed' : ''">
+                      <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                          <div class="d-flex align-items-center gap-1">
+                            <div class="avatar-xs bg-soft-primary text-primary rounded-circle d-flex align-items-center justify-content-center fw-black fs-10">
+                              {{ getUserName(d.userIdA).substring(0,2).toUpperCase() }}
+                            </div>
+                            <i class="fa-solid fa-arrows-left-right text-muted fs-10 opacity-40 mx-1"></i>
+                            <div class="avatar-xs bg-soft-primary text-primary rounded-circle d-flex align-items-center justify-content-center fw-black fs-10">
+                              {{ getUserName(d.userIdB).substring(0,2).toUpperCase() }}
+                            </div>
+                          </div>
+                          <div>
+                            <div class="fw-bold text-doc-heading fs-13">{{ getUserName(d.userIdA) }}</div>
+                            <div class="text-muted fs-11">{{ getUserName(d.userIdB) }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-center py-3">
+                        <span class="badge bg-soft-info text-info px-3 py-2 rounded-pill fw-black fs-12">{{ d.messageCount }}</span>
+                      </td>
+                      <td class="text-center py-3">
+                        <span *ngIf="d.distressedMessageCount > 0" class="badge bg-danger text-white px-3 py-2 rounded-pill fw-black fs-12">
+                          <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ d.distressedMessageCount }}
+                        </span>
+                        <span *ngIf="d.distressedMessageCount === 0" class="badge bg-soft-success text-success px-3 py-2 rounded-pill fw-bold fs-12">
+                          <i class="fa-solid fa-check me-1"></i> 0
+                        </span>
+                      </td>
+                      <td class="text-end pe-4 py-3">
+                        <button class="btn btn-primary btn-sm fw-bold rounded-pill px-3 shadow-sm" (click)="viewDmThread(d)">
+                          <i class="fa-solid fa-eye me-1"></i> View Thread
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="filteredDmMeta.length === 0 && dmMeta.length > 0">
+                      <td colspan="4" class="text-center py-5">
+                        <i class="fa-solid fa-filter-circle-xmark fs-2 text-muted opacity-25 mb-3 d-block"></i>
+                        <p class="text-muted fw-bold mb-0">No conversations match your filters.</p>
+                        <button class="btn btn-soft-primary btn-sm rounded-pill px-4 mt-2" (click)="clearDmFilters()">Clear Filters</button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="dmMeta.length === 0">
+                      <td colspan="4" class="text-center py-5">
+                        <i class="fa-solid fa-message-slash fs-2 text-muted opacity-25 mb-3 d-block"></i>
+                        <p class="text-muted fw-bold mb-0">No direct message activity recorded.</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="dmTotalPages > 1" class="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-light">
+                <span class="text-muted fs-12 fw-medium">
+                  {{ (dmCurrentPage - 1) * dmPageSize + 1 }}-{{ Math.min(dmCurrentPage * dmPageSize, filteredDmMeta.length) }} of {{ filteredDmMeta.length }}
+                </span>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold" [disabled]="dmCurrentPage === 1" (click)="prevPage()">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+                  <button *ngFor="let page of dmPageNumbers" class="btn btn-sm fw-bold rounded-circle"
+                          style="width: 32px; height: 32px;"
+                          [ngClass]="page === dmCurrentPage ? 'btn-primary' : 'btn-light text-muted'"
+                          (click)="goToPage(page)">{{ page }}</button>
+                  <button class="btn btn-light btn-sm rounded-pill px-3 fw-bold" [disabled]="dmCurrentPage === dmTotalPages" (click)="nextPage()">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detail View -->
+            <div *ngIf="viewingDmPair" class="animate-fade-in bg-light p-4 rounded-4" style="min-height: 400px; display: flex; flex-direction: column;">
+              <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                  <button class="btn btn-white shadow-sm rounded-circle px-0" style="width: 40px; height: 40px;" (click)="closeDmThread()">
+                    <i class="fa-solid fa-arrow-left text-muted"></i>
+                  </button>
+                  <div>
+                    <h6 class="fw-black text-doc-heading mb-0">Auditing Private Thread</h6>
+                    <span class="text-muted small">Between {{ getUserName(viewingDmPair.userIdA) }} and {{ getUserName(viewingDmPair.userIdB) }}</span>
+                  </div>
+                </div>
+                <span class="badge bg-soft-danger text-danger fw-black px-3 py-2 rounded-pill small">
+                  ADMIN OVERRIDE
+                </span>
+              </div>
+
+              <!-- Messages List -->
+              <div *ngIf="dmThreadLoading" class="text-center py-5 flex-grow-1">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted small fw-bold mt-2">Decrypting thread...</p>
+              </div>
+
+              <div *ngIf="!dmThreadLoading && activeDmThread.length > 0" class="flex-grow-1 d-flex flex-column gap-3 overflow-auto pe-2" style="max-height: 500px;">
+                <div *ngFor="let m of activeDmThread" class="d-flex gap-3 align-items-end" [ngClass]="{'justify-content-end': m.authorId === viewingDmPair.userIdA}">
+                  
+                  <div *ngIf="m.authorId !== viewingDmPair.userIdA" class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-12 flex-shrink-0" style="width: 32px; height: 32px;">
+                    {{ getUserName(m.authorId).substring(0,2).toUpperCase() }}
+                  </div>
+
+                  <div class="p-3 shadow-sm position-relative" 
+                       [ngClass]="m.authorId === viewingDmPair.userIdA ? 'bg-primary text-white rounded-4 rounded-bottom-end-0' : 'bg-white text-dark rounded-4 rounded-bottom-start-0'"
+                       style="max-width: 75%; border: 1px solid rgba(0,0,0,0.05);"
+                       [class.border-danger]="m.distressed">
+                    
+                    <div *ngIf="m.distressed" class="position-absolute top-0 start-100 translate-middle">
+                      <i class="fa-solid fa-triangle-exclamation text-danger fs-4 drop-shadow"></i>
+                    </div>
+
+                    <div class="fs-11 mb-1 fw-bold opacity-75" [ngClass]="m.authorId === viewingDmPair.userIdA ? 'text-white' : 'text-primary'">
+                      {{ getUserName(m.authorId) }}
+                    </div>
+                    
+                    <div class="fs-14 fw-medium lh-sm" style="white-space: pre-wrap;">{{ m.content }}</div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" [ngStyle]="{'borderColor': m.authorId === viewingDmPair.userIdA ? 'rgba(255,255,255,0.2) !important' : 'rgba(0,0,0,0.05) !important'}">
+                      <span class="fs-10 fw-bold opacity-50">{{ m.createdAt | date:'MMM d, h:mm a' }}</span>
+                      <button class="btn btn-sm btn-link p-0 opacity-50 hover-opacity-100" (click)="adminDeleteMessage(m.id)" title="Force Delete Message">
+                        <i class="fa-solid fa-trash-can" [ngClass]="m.authorId === viewingDmPair.userIdA ? 'text-white' : 'text-danger'"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div *ngIf="m.authorId === viewingDmPair.userIdA" class="avatar-sm bg-doc-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-12 flex-shrink-0" style="width: 32px; height: 32px;">
+                    {{ getUserName(m.authorId).substring(0,2).toUpperCase() }}
+                  </div>
+
+                </div>
+              </div>
+
+              <div *ngIf="!dmThreadLoading && activeDmThread.length === 0" class="text-center py-5 flex-grow-1">
+                <i class="fa-solid fa-comment-slash fs-1 text-muted opacity-25 mb-3"></i>
+                <p class="text-muted fw-bold">No messages found in this thread.</p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div> <!-- closes currentView ngSwitch -->
+
+<!-- EDIT GROUP MODAL (STYLIZED) -->
+<div *ngIf="editingGroup" class="modal-backdrop fade show" style="z-index: 1040; background-color: rgba(0,0,0,0.4);">
+</div>
+<div *ngIf="editingGroup" class="modal fade show d-block animate-fade-in" tabindex="-1" style="z-index: 1050;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white">
+      <div class="modal-header border-0 bg-soft-primary p-4">
+        <h5 class="modal-title fw-bold text-primary">Update Community Entity</h5>
+        <button type="button" class="btn-close rounded-circle border-0 bg-white shadow-sm p-2"
+          (click)="cancelEdit()"></button>
+      </div>
+      <div class="modal-body p-4 pt-4">
+        <div class="mb-4">
+          <label class="form-label fw-bold text-muted small text-uppercase">Entity Name</label>
+          <input type="text"
+            class="form-control form-control-lg bg-grey border-0 rounded-4 px-3 py-2 shadow-sm fs-15 fw-bold"
+            [(ngModel)]="editingGroup.name">
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-bold text-muted small text-uppercase">Public Description</label>
+          <textarea class="form-control bg-grey border-0 rounded-4 p-3 shadow-sm fs-14" rows="3"
+            [(ngModel)]="editingGroup.description" style="resize: none;"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-bold text-muted small text-uppercase">Category Classification</label>
+          <select class="form-select form-select-lg bg-grey border-0 rounded-4 shadow-sm fs-15 fw-semibold"
+            [(ngModel)]="editingGroup.category">
+            <option value="PATIENTS">Patient Community</option>
+            <option value="FAMILY">Family Support</option>
+            <option value="PROFESSIONAL">Clinical Experts</option>
+            <option value="MIXED">Mixed Community</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer border-0 p-4 pt-0">
+        <button type="button" class="btn btn-soft-primary fw-bold rounded-pill px-4 me-2 border-0"
+          (click)="cancelEdit()">Discard</button>
+        <button type="button" class="btn btn-primary fw-bold rounded-pill px-5 shadow" (click)="saveEdit()">
+          Save Configuration
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div> <!-- closes admin-dashboard-wrapper -->

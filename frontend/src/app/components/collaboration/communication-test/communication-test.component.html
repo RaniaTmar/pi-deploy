@@ -1,0 +1,77 @@
+<main class="social-shell animate-fade-in">
+  <app-voice-welcome></app-voice-welcome>
+  <div class="container-fluid px-4 px-lg-5">
+    <div class="social-grid" [class.no-sidebar]="isAdmin()">
+      
+      <!-- LEFT SIDEBAR: Navigation & Communities -->
+      <aside class="sidebar-left" *ngIf="!isAdmin()">
+        <!-- Profile Summary -->
+        <a routerLink="/collaboration/feed" class="profile-link shadow-doc">
+          <div class="avatar-placeholder bg-soft-primary d-flex align-items-center justify-content-center text-primary fw-black">
+            {{ currentUser()?.prenom?.substring(0,1) || 'U' }}
+          </div>
+          <div class="d-flex flex-column">
+            <span class="text-doc-heading ls-n1">{{ currentUser()?.prenom }} {{ currentUser()?.nom }}</span>
+            <small class="text-doc-secondary fs-11 fw-bold opacity-75">Care Provider</small>
+          </div>
+        </a>
+
+        <!-- Primary Navigation -->
+        <nav class="nav-card">
+          <a routerLink="/collaboration/feed" class="nav-item-social" [class.active]="isRouteActive('/collaboration/feed')">
+            <i class="fa-solid fa-house-chimney-medical"></i>
+            <span>Clinical Feed</span>
+          </a>
+          <a routerLink="/collaboration/messenger" class="nav-item-social" [class.active]="isRouteActive('/collaboration/messenger')">
+            <i class="fa-solid fa-comments"></i>
+            <span>Direct Messenger</span>
+          </a>
+          <a routerLink="/collaboration/groups" class="nav-item-social" [class.active]="isRouteActive('/collaboration/groups')">
+            <i class="fa-solid fa-hubspot"></i>
+            <span>Discover Specialties</span>
+          </a>
+        </nav>
+
+        <!-- My Groups Section -->
+        <div class="social-section-title">
+          <span>Joined Circles</span>
+          <a routerLink="/collaboration/groups" class="text-primary text-decoration-none fw-black fs-11" style="cursor: pointer;">EXPLORE</a>
+        </div>
+
+        <div class="sidebar-search">
+          <div class="input-group shadow-sm">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass fs-13"></i></span>
+            <input type="text" class="form-control" placeholder="Search my circles..." [(ngModel)]="groupSearchQuery">
+          </div>
+        </div>
+
+        <div class="list-groups-social animate-fade-in">
+          <div *ngFor="let g of joinedGroups()" class="social-list-item" [routerLink]="['/collaboration/groups', g.id, 'feed']">
+            <div class="avatar-circle shadow-sm">
+              {{ g.name.substring(0, 2).toUpperCase() }}
+            </div>
+            <span class="fs-14 fw-bold ls-n1">{{ g.name }}</span>
+          </div>
+          <p *ngIf="joinedGroups().length === 0" class="text-muted fs-11 fw-bold px-3 opacity-50">No circles joined yet.</p>
+        </div>
+
+        <div class="mt-5 pt-3 border-top px-3">
+          <button class="btn btn-link btn-sm text-danger p-0 text-decoration-none fw-black fs-12 text-uppercase letter-spacing-1" (click)="logout()">
+            <i class="fa-solid fa-power-off me-2"></i> Log Out Account
+          </button>
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN: Main Content Flow -->
+      <section class="feed-column">
+        <router-outlet></router-outlet>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Floating Mini-Chat Widget (hidden for ADMIN) -->
+  <ng-container *ngIf="!isAdmin()">
+    <app-mini-chat-widget></app-mini-chat-widget>
+  </ng-container>
+</main>
