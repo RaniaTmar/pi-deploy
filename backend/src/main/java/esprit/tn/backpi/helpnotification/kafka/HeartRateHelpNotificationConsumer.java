@@ -2,6 +2,7 @@ package esprit.tn.backpi.helpnotification.kafka;
 
 import esprit.tn.backpi.helpnotification.dto.HeartRateAlertEvent;
 import esprit.tn.backpi.helpnotification.service.AlertConfirmationService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
  * for a 10-second confirmation delay before notification is sent.
  */
 @Component
+@ConditionalOnProperty(name = "kafka.enabled", havingValue = "true")
 public class HeartRateHelpNotificationConsumer {
 
     private final AlertConfirmationService alertConfirmationService;

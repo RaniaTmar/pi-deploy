@@ -2,6 +2,7 @@ package tn.esprit.smartwatchservice.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import tn.esprit.smartwatchservice.dto.HeartRateEvent;
@@ -21,6 +22,7 @@ import tn.esprit.smartwatchservice.service.HeartRateAiService;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "kafka.enabled", havingValue = "true")
 public class HeartRateAiConsumer {
 
     private final HeartRateAiService aiService;
