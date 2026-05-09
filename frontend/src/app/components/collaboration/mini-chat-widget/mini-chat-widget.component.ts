@@ -9,6 +9,7 @@ import { WebSocketService } from '../../../services/collaboration/websocket.serv
 import { MessageService, MessageDto } from '../../../services/collaboration/message.service';
 import { AuthService } from '../../../services/auth.service';
 import { CareBotService } from '../../../services/collaboration/care-bot.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-mini-chat-widget',
@@ -146,7 +147,7 @@ export class MiniChatWidgetComponent implements OnInit {
     }
 
     if (imageUrl && imageUrl.startsWith('/uploads/')) {
-      return 'http://localhost:8080' + imageUrl;
+      return environment.apiUrl + imageUrl;
     }
     return imageUrl;
   }

@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -211,7 +212,7 @@ Analyse la transcription et retourne UNIQUEMENT un JSON valide (sans backticks n
 Règles : questions concrètes adaptées Alzheimer, résumé centré patient, JSON uniquement.`;
 
     try {
-      const res = await fetch('http://localhost:8080/api/ai/analyze', {
+      const res = await fetch(`${environment.apiUrl}/api/ai/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

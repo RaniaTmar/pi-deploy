@@ -4,6 +4,7 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -64,7 +65,7 @@ export class FirebaseMessagingService {
   private saveTokenToBackend(token: string) {
     const user = this.auth.getCurrentUser();
     if (user && user.id) {
-      this.http.patch(`http://localhost:8080/api/users/${user.id}/fcm-token`, { fcmToken: token })
+      this.http.patch(`${environment.apiUrl}/api/users/${user.id}/fcm-token`, { fcmToken: token })
         .subscribe(() => console.log('Token saved to backend'));
     }
   }

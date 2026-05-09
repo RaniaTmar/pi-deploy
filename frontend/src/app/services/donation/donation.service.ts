@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DonationCampaign, Donation } from '../../models/donation/donation.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class DonationService {
 
-  private campaignApi = 'http://localhost:8080/api/campaigns';
-  private donationApi = 'http://localhost:8080/api/donations';
+  private campaignApi = `${environment.apiUrl}/api/campaigns`;
+  private donationApi = `${environment.apiUrl}/api/donations`;
 
   constructor(private http: HttpClient) {}
 
@@ -83,6 +84,6 @@ export class DonationService {
 
   // ── AI Analysis ────────────────────────────────
   analyzeCampaign(id: string): Observable<any> {
-    return this.http.post<any>(`http://localhost:8080/api/ai/analyze-campaign/${id}`, {});
+    return this.http.post<any>(`${environment.apiUrl}/api/ai/analyze-campaign/${id}`, {});
   }
 }

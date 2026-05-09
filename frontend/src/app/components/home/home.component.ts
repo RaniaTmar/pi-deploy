@@ -7,6 +7,7 @@ import { RendezVousService } from '../../services/rendezvous.service';
 import { RendezVous } from '../../models/rendezvous.model';
 import { NotificationService } from '../../services/collaboration/notification.service';
 import { AlzUserService } from '../../services/alz-user.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -89,7 +90,7 @@ export class HomeComponent implements OnInit {
     }
     
     if (imageUrl && imageUrl.startsWith('/uploads/')) {
-      return 'http://localhost:8080' + imageUrl;
+      return environment.apiUrl + imageUrl;
     }
     return imageUrl || null;
   }

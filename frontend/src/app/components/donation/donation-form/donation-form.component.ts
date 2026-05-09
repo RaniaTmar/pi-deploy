@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DonationService } from '../../../services/donation/donation.service';
 import { DonationCampaign, Donation } from '../../../models/donation/donation.model';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-donation-form',
@@ -457,7 +458,7 @@ export class DonationFormComponent implements OnInit {
 
   getImageUrl(imageUrl?: string): string {
     if (!imageUrl) return 'template/assets/img/donation.jpg';
-    return 'http://localhost:8080' + imageUrl;
+    return environment.apiUrl + imageUrl;
   }
 
   getProgress(): number {

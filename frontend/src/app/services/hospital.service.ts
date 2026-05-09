@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Hospital } from '../models/hospital.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HospitalService {
-  private apiUrl = 'http://localhost:8080/api/hospitals';
+  private apiUrl = `${environment.apiUrl}/api/hospitals`;
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Hospital[]> {

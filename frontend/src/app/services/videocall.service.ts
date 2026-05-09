@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { Client, StompSubscription, Message } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface SignalMessage {
   type: string;
@@ -55,7 +56,7 @@ export class VideoCallService {
       }
     }
     console.log('WS: Connexion pour user:', userId);
-    const socket = new SockJS(`http://localhost:8080/ws?userId=${userId}`);
+    const socket = new SockJS(`${environment.apiUrl}/ws?userId=${userId}`);
     this.stompClient = new Client({
       webSocketFactory: () => socket,
       debug: (msg) => console.log('STOMP Debug:', msg),

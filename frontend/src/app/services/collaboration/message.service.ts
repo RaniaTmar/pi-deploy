@@ -149,6 +149,6 @@ export class MessageService {
   }
 
   getAiHandoverSummary(groupId: string) {
-    return this.http.get<{summary: string}>(`http://localhost:8080/api/handover/group/${groupId}`);
+    return this.http.get<{summary: string}>(`${environment.apiUrl}/api/handover/group/${groupId}`);
   }
 }

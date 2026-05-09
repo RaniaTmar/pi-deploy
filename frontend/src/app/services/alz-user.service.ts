@@ -2,11 +2,12 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User, Role } from '../models/user.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AlzUserService {
 
-  private apiUrl = 'http://localhost:8080/api/users';
+  private apiUrl = `${environment.apiUrl}/api/users`;
   users = signal<User[]>([]);
 
   constructor(private http: HttpClient) {}

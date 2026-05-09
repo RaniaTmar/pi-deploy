@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DonationService } from '../../../services/donation/donation.service';
 import { DonationCampaign, Donation } from '../../../models/donation/donation.model';
 import { Chart, registerables } from 'chart.js';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-donation',
@@ -259,7 +260,7 @@ export class AdminDonationComponent implements OnInit, AfterViewInit {
 
   getImageUrl(imageUrl?: string): string {
     if (!imageUrl) return '';
-    return 'http://localhost:8080' + imageUrl;
+    return environment.apiUrl + imageUrl;
   }
 
   getProgress(c: DonationCampaign): number {

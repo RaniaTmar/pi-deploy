@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, effect, untracked, PLATFORM_ID, comp
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 import { PublicationService, PublicationDto, SharedEventPreviewDto } from '../../../services/collaboration/publication.service';
 import { AlzUserService } from '../../../services/alz-user.service';
 import { CommentService } from '../../../services/collaboration/comment.service';
@@ -220,7 +221,7 @@ export class FeedComponent implements OnInit {
     }
 
     if (imageUrl && imageUrl.startsWith('/uploads/')) {
-      return 'http://localhost:8080' + imageUrl;
+      return environment.apiUrl + imageUrl;
     }
     return imageUrl;
   }
@@ -760,7 +761,7 @@ export class FeedComponent implements OnInit {
   }
 
   sharedEventImageUrl(ev: SharedEventPreviewDto): string {
-    if (ev.imageUrl) return 'http://localhost:8080' + ev.imageUrl;
+    if (ev.imageUrl) return environment.apiUrl + ev.imageUrl;
     return 'assets/images/event-placeholder.jpg';
   }
 

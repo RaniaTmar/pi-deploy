@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { DonationService } from '../../../services/donation/donation.service';
 import { DonationCampaign } from '../../../models/donation/donation.model';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-donation-list',
@@ -617,7 +618,7 @@ export class DonationListComponent implements OnInit {
 
   getImageUrl(imageUrl?: string): string {
     if (!imageUrl) return 'template/assets/img/donation.jpg';
-    return 'http://localhost:8080' + imageUrl;
+    return environment.apiUrl + imageUrl;
   }
 
   getProgress(campaign: DonationCampaign): number {

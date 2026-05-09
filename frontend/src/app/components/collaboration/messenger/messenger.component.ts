@@ -4,6 +4,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 import { PublicationDto } from '../../../services/collaboration/publication.service';
 import { MessageService, MessageDto } from '../../../services/collaboration/message.service';
 import { ChatGroupService, ChatGroupDto, MemberDto } from '../../../services/collaboration/chat-group.service';
@@ -127,7 +128,7 @@ export class MessengerComponent implements OnInit, OnDestroy {
     }
 
     if (imageUrl && imageUrl.startsWith('/uploads/')) {
-      return 'http://localhost:8080' + imageUrl;
+      return environment.apiUrl + imageUrl;
     }
     return imageUrl;
   }

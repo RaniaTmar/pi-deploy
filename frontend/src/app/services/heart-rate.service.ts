@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface HeartRateRecord {
   id?: string;
@@ -37,7 +38,7 @@ export interface SmartwatchTokenResponse {
 @Injectable({ providedIn: 'root' })
 export class HeartRateService {
 
-  private apiUrl = 'http://localhost:8080/api/heart-rate';
+  private apiUrl = `${environment.apiUrl}/api/heart-rate`;
 
   constructor(private http: HttpClient) { }
 

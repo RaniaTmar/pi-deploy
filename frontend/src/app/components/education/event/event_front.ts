@@ -8,6 +8,7 @@ import { PublicationService } from '../../../services/collaboration/publication.
 import { MessageService } from '../../../services/collaboration/message.service';
 import { ChatGroupService } from '../../../services/collaboration/chat-group.service';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-event-front',
@@ -894,7 +895,7 @@ export class EventFrontComponent implements OnInit {
   getImageUrl(imageUrl?: string): string {
     if (!imageUrl) return '';
     if (imageUrl.startsWith('http')) return imageUrl;
-    return 'http://localhost:8080' + imageUrl;
+    return environment.apiUrl + imageUrl;
   }
 
   getDay(dateStr?: string): string {
