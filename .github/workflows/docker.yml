@@ -1,5 +1,5 @@
 
-name: Build Frontend and Backend
+name: Build Frontend and Backende
 
 on:
   push:
