@@ -2,6 +2,7 @@ package esprit.tn.backpi.helpnotification.kafka;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -20,11 +21,14 @@ import java.util.Map;
  * Creates a consumer factory and listener container factory
  * for deserializing HeartRateAlertEvent messages from the
  * "heartrate.alerts" topic.
+ *
+ * Only loaded when spring.kafka.bootstrap-servers is defined.
  */
 @Configuration
+@ConditionalOnProperty(name = "spring.kafka.bootstrap-servers")
 public class KafkaConsumerConfig {
 
-    @Value("${spring.kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers:}")
     private String bootstrapServers;
 
     @Bean
