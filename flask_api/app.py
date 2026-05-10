@@ -306,5 +306,9 @@ def send_reminder_email():
         # Returning 500 but handled properly in Java backend
         return jsonify({'error': str(e)}), 500
 
+@app.route('/health', methods=['GET'])
+def health():
+    return {'status': 'ok'}, 200
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

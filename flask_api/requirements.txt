@@ -6,3 +6,6 @@ numpy>=1.23.0
 python-dotenv
 pdfplumber
 requests
+groq
+resend
+gunicorn==21.2.0
