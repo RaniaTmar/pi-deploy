@@ -3,6 +3,7 @@ package tn.esprit.smartwatchservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -28,6 +29,7 @@ import tn.esprit.smartwatchservice.service.SmartwatchTokenService;
 @RequestMapping("/api/heart-rate")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "kafka.enabled", havingValue = "true")
 public class HeartRateIngestionController {
 
     private final HeartRateIngestionService ingestionService;
