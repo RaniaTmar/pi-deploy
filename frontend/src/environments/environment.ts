@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
-  apiUrl: window.location.origin,
-  geoApiUrl: window.location.origin
+  production: false,
+  apiUrl:    'http://localhost:8080',
+  geoApiUrl: 'http://localhost:8080'
 };
