@@ -49,7 +49,7 @@ jobs:
       - name: Setup kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          echo "${{ secrets.kube2 }}" > ~/.kube/config
 
       - name: Restart frontend deployment
         run: |
