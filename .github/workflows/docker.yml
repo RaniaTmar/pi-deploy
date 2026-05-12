@@ -42,19 +42,3 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: raniaat12/mono-backend:latest
-
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-
-      - name: Setup kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.kube2 }}" > ~/.kube/config
-
-      - name: Restart frontend deployment
-        run: |
-          kubectl rollout restart deployment frontend
-
-      - name: Restart backend deployment
-        run: |
-          kubectl rollout restart deployment mono-backend
