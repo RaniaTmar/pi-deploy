@@ -14,7 +14,7 @@ import resend
 
 app = Flask(__name__)
 CORS(app)
-load_dotenv()
+load_dotenv(override=False)
 
 resend.api_key = os.getenv("RESEND_API_KEY")
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
