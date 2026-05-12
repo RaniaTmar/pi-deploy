@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'flask_api/**'
-      - '.github/workflows/docker-flask.yml'
 
 jobs:
   build-and-push-flask:
@@ -30,19 +27,3 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/antigravity-flask:latest
-            ${{ secrets.DOCKER_USERNAME }}/antigravity-flask:${{ github.sha }}
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
-          chmod 600 ~/.kube/config
-
-      - name: Deploy Flask to Kubernetes
-        run: |
-          kubectl apply -f k8s/flask-deployment.yaml
-          kubectl apply -f k8s/flask-service.yaml
-          kubectl rollout restart deployment/flask-api
