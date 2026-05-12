@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: rassaasarra/k8s-project-heat
-          token: ${{ secrets.GH_PAT }}   # ← token personnel, pas GITHUB_TOKEN
+          token: ${{ secrets.GH_PATE }}   # ← token personnel, pas GITHUB_TOKEN
           ref: main
 
       - name: Update frontend image tag
