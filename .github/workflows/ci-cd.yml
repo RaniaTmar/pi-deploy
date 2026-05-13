@@ -1,0 +1,101 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # JOB 1 – Build & push frontend image
+  # ──────────────────────────────────────────────────────────────
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pi-deploy
+        uses: actions/checkout@v4
+
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 2 -type d
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            raniaat12/front:${{ github.sha }}
+            raniaat12/front:latest
+
+  # ──────────────────────────────────────────────────────────────
+  # JOB 2 – Build & push backend image
+  # ──────────────────────────────────────────────────────────────
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pi-deploy
+        uses: actions/checkout@v4
+
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 2 -type d
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            raniaat12/mono-backend:${{ github.sha }}
+            raniaat12/mono-backend:latest
+
+  # ──────────────────────────────────────────────────────────────
+  # JOB 3 – Update image tags in k8s-project-heat
+  # Runs only after BOTH images are pushed successfully
+  # ──────────────────────────────────────────────────────────────
+  update-manifests:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+
+    steps:
+      - name: Clone k8s-project-heat using GH_PATE
+        run: |
+          git clone https://x-access-token:${{ secrets.GH_PATE }}@github.com/rassaasarra/k8s-project-heat.git k8s-project-heat
+
+      - name: Update frontend image tag
+        run: |
+          sed -i "s|image: raniaat12/front:.*|image: raniaat12/front:${{ github.sha }}|g" \
+            k8s-project-heat/k8s/frontend-deployment.yaml
+
+      - name: Update backend image tag
+        run: |
+          sed -i "s|image: raniaat12/mono-backend:.*|image: raniaat12/mono-backend:${{ github.sha }}|g" \
+            k8s-project-heat/k8s/backend-deployment.yaml
+
+      - name: Commit and push to k8s-project-heat
+        run: |
+          cd k8s-project-heat
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/frontend-deployment.yaml k8s/backend-deployment.yaml
+          git diff --staged --quiet || git commit -m "Update image tags to ${{ github.sha }} [skip ci]"
+          git push
