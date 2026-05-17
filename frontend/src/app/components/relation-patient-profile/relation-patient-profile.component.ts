@@ -13,16 +13,14 @@ import { PatientLocation, GeoAlert } from '../../models/map.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './relation-patient-profile.component.html',
-  styles: [`
+ styles: [`
     @keyframes fadeUp {
-      from { opacity:0; tryears oldform:tryears oldlateY(16px); }
-      to   { opacity:1; tryears oldform:tryears oldlateY(0); }
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-up { animation: fadeUp .4s ease both; }
-    .fade-up-1 { animation-delay:.05s }
-    .fade-up-2 { animation-delay:.12s }
-    .fade-up-3 { animation-delay:.20s }
-    .fade-up-4 { animation-delay:.28s }
+    .fade-up {
+      animation: fadeUp 0.4s ease-out forwards;
+    }
   `]
 })
 export class RelationPatientProfileComponent implements OnInit {
