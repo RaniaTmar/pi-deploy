@@ -121,7 +121,7 @@ export class RendezVousFormComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.error = 'Impossible de charger le rendez-vous.';
+        this.error = 'Could not load the appointment.';
         this.loading = false;
       }
     });
@@ -135,13 +135,13 @@ export class RendezVousFormComponent implements OnInit {
   getError(field: string): string {
     const ctrl = this.form.get(field);
     if (!ctrl || !ctrl.errors) return '';
-    if (ctrl.errors['required']) return 'Ce champ est obligatoire.';
-    if (ctrl.errors['min']) return `La valeur minimale est ${ctrl.errors['min'].min}.`;
-    if (ctrl.errors['pattern']) return 'Veuillez saisir un nombre entier positif.';
-    if (ctrl.errors['minlength']) return `Minimum ${ctrl.errors['minlength'].requiredLength} caractères requis.`;
-    if (ctrl.errors['maxlength']) return `Maximum ${ctrl.errors['maxlength'].requiredLength} caractères autorisés.`;
-    if (ctrl.errors['pastDate']) return 'La date doit être dans le futur.';
-    return 'Valeur invalide.';
+    if (ctrl.errors['required']) return 'This field is required.';
+    if (ctrl.errors['min']) return `Minimum value is ${ctrl.errors['min'].min}.`;
+    if (ctrl.errors['pattern']) return 'Please enter a positive integer.';
+    if (ctrl.errors['minlength']) return `Minimum ${ctrl.errors['minlength'].requiredLength} characters required.`;
+    if (ctrl.errors['maxlength']) return `Maximum ${ctrl.errors['maxlength'].requiredLength} characters allowed.`;
+    if (ctrl.errors['pastDate']) return 'Date must be in the future.';
+    return 'Invalid value.';
   }
 
   onSubmit(): void {
@@ -158,24 +158,24 @@ export class RendezVousFormComponent implements OnInit {
     if (this.isEdit && this.editId !== null) {
       this.service.update(this.editId, payload).subscribe({
         next: () => {
-          this.success = 'Rendez-vous mis à jour avec succès !';
+          this.success = 'Appointment updated successfully!';
           this.submitting = false;
           setTimeout(() => this.router.navigate(['/rendezvous']), 1500);
         },
         error: () => {
-          this.error = 'Erreur lors de la mise à jour. Veuillez réessayer.';
+          this.error = 'Error updating. Please try again.';
           this.submitting = false;
         }
       });
     } else {
       this.service.create(payload).subscribe({
         next: () => {
-          this.success = 'Rendez-vous créé avec succès !';
+          this.success = 'Appointment created successfully!';
           this.submitting = false;
           setTimeout(() => this.router.navigate(['/rendezvous']), 1500);
         },
         error: () => {
-          this.error = 'Erreur lors de la création. Veuillez réessayer.';
+          this.error = 'Error creating. Please try again.';
           this.submitting = false;
         }
       });

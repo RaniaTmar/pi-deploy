@@ -182,10 +182,10 @@ export class AdminDonationComponent implements OnInit, AfterViewInit {
   validate(): boolean {
     this.errors = {};
     if (!this.newCampaign.title?.trim()) {
-      this.errors['title'] = 'Le titre est obligatoire.';
+      this.errors['title'] = 'Title is required.';
     }
     if (!this.newCampaign.goalAmount || this.newCampaign.goalAmount <= 0) {
-      this.errors['goalAmount'] = 'L\'objectif doit être supérieur à 0.';
+      this.errors['goalAmount'] = 'Goal must be greater than 0.';
     }
     return Object.keys(this.errors).length === 0;
   }
@@ -227,7 +227,7 @@ export class AdminDonationComponent implements OnInit, AfterViewInit {
   }
 
   deleteCampaign(id: string) {
-    if (confirm('Supprimer cette campagne et tous ses dons associés ?')) {
+    if (confirm('Delete this campaign and all its associated donations?')) {
       this.donationService.deleteCampaign(id).subscribe(() => this.loadAll());
     }
   }
@@ -240,7 +240,7 @@ export class AdminDonationComponent implements OnInit, AfterViewInit {
   }
 
   deleteDonation(id: string) {
-    if (confirm('Supprimer ce don ?')) {
+    if (confirm('Delete this donation?')) {
       this.donationService.deleteDonation(id).subscribe(() => {
         if (this.selectedCampaign) {
           this.viewDonations(this.selectedCampaign);

@@ -472,34 +472,34 @@ export class DonationFormComponent implements OnInit {
     this.errors = {};
 
     if (!this.donation.amount || this.donation.amount <= 0) {
-      this.errors['amount'] = 'Le montant doit être supérieur à 0.';
+      this.errors['amount'] = 'Amount must be greater than 0.';
     } else if (this.donation.amount > 100000) {
-      this.errors['amount'] = 'Le montant ne peut pas dépasser 100 000 DT.';
+      this.errors['amount'] = 'Amount cannot exceed 100,000 DT.';
     }
 
     if (!this.donation.donorFirstName?.trim()) {
-      this.errors['donorFirstName'] = 'Le prénom est obligatoire.';
+      this.errors['donorFirstName'] = 'First name is required.';
     }
 
     if (!this.donation.donorLastName?.trim()) {
-      this.errors['donorLastName'] = 'Le nom est obligatoire.';
+      this.errors['donorLastName'] = 'Last name is required.';
     }
 
     if (!this.donation.donorEmail?.trim()) {
-      this.errors['donorEmail'] = 'L\'email est obligatoire.';
+      this.errors['donorEmail'] = 'Email is required.';
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.donation.donorEmail)) {
-        this.errors['donorEmail'] = 'L\'email n\'est pas valide.';
+        this.errors['donorEmail'] = 'Email is not valid.';
       }
     }
 
     if (!this.donation.paymentMethod) {
-      this.errors['paymentMethod'] = 'Veuillez choisir une méthode de paiement.';
+      this.errors['paymentMethod'] = 'Please choose a payment method.';
     }
 
     if (!this.agreeTerms) {
-      this.errors['agree'] = 'Vous devez accepter les conditions.';
+      this.errors['agree'] = 'You must accept the terms.';
     }
 
     return Object.keys(this.errors).length === 0;
@@ -517,7 +517,7 @@ export class DonationFormComponent implements OnInit {
         },
         error: () => {
           this.submitting = false;
-          alert('Erreur lors de la communication avec le serveur de paiement. Veuillez réessayer.');
+          alert('Error communicating with the payment server. Please try again.');
         }
       });
     } else {
@@ -546,7 +546,7 @@ export class DonationFormComponent implements OnInit {
         },
         error: () => {
           this.submitting = false;
-          alert('Erreur lors de l\'enregistrement du don. Veuillez réessayer.');
+          alert('Error saving the donation. Please try again.');
         }
       });
     }
@@ -574,7 +574,7 @@ export class DonationFormComponent implements OnInit {
         console.error('AI Analysis Error:', err);
         this.analyzing = false;
         this.showAiModal = false;
-        alert('Désolé, l\'IA n\'a pas pu analyser cette campagne pour le moment.');
+        alert('Sorry, the AI could not analyse this campaign right now.');
       }
     });
   }

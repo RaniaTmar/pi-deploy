@@ -3,7 +3,7 @@
   <div class="container-fluid px-4 px-lg-5">
     <div class="social-grid" [class.no-sidebar]="isAdmin()">
       
-      <!-- LEFT SIDEBAR: Navigation & Communities -->
+      <!-- LEFT SIDEBAR: Navigation & Communities (desktop only) -->
       <aside class="sidebar-left" *ngIf="!isAdmin()">
         <!-- Profile Summary -->
         <a routerLink="/collaboration/feed" class="profile-link shadow-doc">
@@ -69,6 +69,26 @@
 
     </div>
   </div>
+
+  <!-- Mobile Bottom Navigation Bar (hidden on desktop) -->
+  <nav class="mobile-bottom-nav d-md-none" *ngIf="!isAdmin()">
+    <a routerLink="/collaboration/feed" class="mobile-nav-item" [class.active]="isRouteActive('/collaboration/feed')">
+      <i class="fa-solid fa-house-chimney-medical"></i>
+      <span>Feed</span>
+    </a>
+    <a routerLink="/collaboration/messenger" class="mobile-nav-item" [class.active]="isRouteActive('/collaboration/messenger')">
+      <i class="fa-solid fa-comments"></i>
+      <span>Messages</span>
+    </a>
+    <a routerLink="/collaboration/groups" class="mobile-nav-item" [class.active]="isRouteActive('/collaboration/groups')">
+      <i class="fa-solid fa-hubspot"></i>
+      <span>Groups</span>
+    </a>
+    <button class="mobile-nav-item text-danger border-0 bg-transparent" (click)="logout()">
+      <i class="fa-solid fa-power-off"></i>
+      <span>Logout</span>
+    </button>
+  </nav>
 
   <!-- Floating Mini-Chat Widget (hidden for ADMIN) -->
   <ng-container *ngIf="!isAdmin()">

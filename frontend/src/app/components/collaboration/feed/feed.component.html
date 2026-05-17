@@ -5,8 +5,8 @@
 
   <!-- Group/Feed Header (Context Aware) -->
   <!-- Context Header -->
-  <div class="feed-header mb-4 p-4 bg-white rounded-4 shadow-doc border-0 d-flex justify-content-between align-items-center">
-    <div>
+  <div class="feed-header mb-4 p-4 bg-white rounded-4 shadow-doc border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="feed-header-title">
       <h3 class="fw-bold mb-1">
         <span *ngIf="!groupId()">Community <span class="text-primary">Collaboration</span></span>
         <span *ngIf="groupId()"><i class="fa-solid fa-users text-primary me-2"></i> {{ currentGroup()?.name }}</span>
@@ -15,7 +15,7 @@
       <p class="fs-14 text-muted mb-0" *ngIf="groupId()">{{ currentGroup()?.description }}</p>
     </div>
 
-    <div class="d-flex align-items-center gap-3">
+    <div class="feed-header-actions d-flex align-items-center gap-2 flex-shrink-0">
       <!-- Notification Bell -->
       <div class="position-relative" data-notif-bell (click)="showNotifDropdown = !showNotifDropdown; $event.stopPropagation()">
         <button class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center border-0 shadow-sm transition-all"
@@ -74,20 +74,19 @@
 
       <!-- Go Live Toggle -->
       <button (click)="toggleGoLive()"
-        class="btn btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm transition-all border-0"
+        class="btn btn-sm rounded-pill fw-bold shadow-sm transition-all border-0 feed-header-btn"
         speakOnHover="Go Live" hoverContextType="button" hoverPage="feed"
         [ngClass]="isLiveNow() ? 'btn-danger' : 'btn-secondary opacity-75'">
-        <i class="fa-solid fa-video me-2" [class.fa-beat-fade]="isLiveNow()"></i>
-        {{ isLiveNow() ? 'Stop Stream' : 'Go Live' }}
+        <i class="fa-solid fa-video" [class.fa-beat-fade]="isLiveNow()"></i>
+        <span class="btn-label ms-2">{{ isLiveNow() ? 'Stop Stream' : 'Go Live' }}</span>
       </button>
 
-      <button type="button" class="btn btn-soft-primary btn-sm rounded-pill px-4 py-2 fw-bold"
+      <button type="button" class="btn btn-soft-primary btn-sm rounded-pill fw-bold feed-header-btn"
         speakOnHover="Sync Feed" hoverContextType="button" hoverPage="feed"
         (click)="refreshData()">
-        <i class="fa-solid fa-rotate-right me-2"></i> Sync Feed
+        <i class="fa-solid fa-rotate-right"></i>
+        <span class="btn-label ms-2">Sync Feed</span>
       </button>
-
-
     </div>
   </div>
 

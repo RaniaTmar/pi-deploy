@@ -221,6 +221,7 @@ export class AppComponent implements OnDestroy {
 
   // Global Admin Layout State
   isSidebarCollapsed = false;
+  isMobileSidebarOpen = false;
   globalSearchQuery = '';
   isDarkMode = false;
 
@@ -237,6 +238,14 @@ export class AppComponent implements OnDestroy {
 
   toggleSidebar() {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
+  }
+
+  toggleMobileSidebar() {
+    this.isMobileSidebarOpen = !this.isMobileSidebarOpen;
+  }
+
+  closeMobileSidebar() {
+    this.isMobileSidebarOpen = false;
   }
 
   doGlobalSearch() {

@@ -100,7 +100,7 @@ export class RendezVousListComponent implements OnInit {
         });
       },
       error: () => {
-        this.error = 'Impossible de charger les rendez-vous. Vérifiez que le serveur est démarré.';
+        this.error = 'Could not load appointments. Please check the server is running.';
         this.loading = false;
       }
     });
@@ -200,7 +200,7 @@ export class RendezVousListComponent implements OnInit {
         this.applyFilters();
       },
       error: () => {
-        alert('Erreur lors du déplacement du rendez-vous.');
+        alert('Error moving the appointment.');
         info.revert();
       }
     });
@@ -227,7 +227,7 @@ export class RendezVousListComponent implements OnInit {
         this.deleteConfirmId = null;
       },
       error: () => {
-        this.error = 'Erreur lors de la suppression.';
+        this.error = 'Error deleting appointment.';
         this.deleteConfirmId = null;
       }
     });
@@ -241,7 +241,7 @@ export class RendezVousListComponent implements OnInit {
         this.applyFilters();
       },
       error: () => {
-        this.error = 'Erreur lors de la mise à jour du statut.';
+        this.error = 'Error updating status.';
       }
     });
   }
